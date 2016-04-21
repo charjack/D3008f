@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Dongfeng3008</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <drawable name="clr_normal">#00ffffff</drawable>
+    <drawable name="clr_pressed">#3333aa</drawable>
+
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
