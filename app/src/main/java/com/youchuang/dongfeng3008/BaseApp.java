@@ -17,8 +17,8 @@ public class BaseApp extends Application{
     public static boolean ifdebug = false;
     public static int current_media = 0; //0:music 1: video 2:picture
     public static int music_play_mode = 0;
-    public static List<String> muscilists = new ArrayList<>();
     public static int current_music_play_num = -1;
+    public static int isstop = 0;
 
 
     public static Context getContext() {

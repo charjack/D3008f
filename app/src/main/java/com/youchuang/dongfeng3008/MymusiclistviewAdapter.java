@@ -10,16 +10,18 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.youchuang.dongfeng3008.vo.Mp3Info;
+
 import java.util.List;
 
 /**
  * Created by NANA on 2016/4/21.
  */
 public class MymusiclistviewAdapter extends BaseAdapter{
-    public List<String> lists;
+    public List<Mp3Info> lists;
     Context ctx;
 
-    public MymusiclistviewAdapter(Context ctx, List<String> lists){
+    public MymusiclistviewAdapter(Context ctx, List<Mp3Info> lists){
         this.ctx = ctx;
         this.lists = lists;
     }
@@ -50,14 +52,14 @@ public class MymusiclistviewAdapter extends BaseAdapter{
             convertView.setTag(vh);
         }
         vh = (ViewHolder) convertView.getTag();
-
+        Mp3Info mp3Info = lists.get(position);
         if(BaseApp.current_music_play_num == position){
             vh.imageView.setImageResource(R.mipmap.yinyue_p);
-            vh.textView.setText(lists.get(position));
+            vh.textView.setText(mp3Info.getTittle()+" - "+mp3Info.getArtist());
             vh.textView.setTextColor(Color.rgb(01, 66, 255));
         }else {
             vh.imageView.setImageResource(R.mipmap.yinyue_n);
-            vh.textView.setText(lists.get(position));
+            vh.textView.setText(mp3Info.getTittle()+" - "+mp3Info.getArtist());
             vh.textView.setTextColor(Color.rgb(255, 255, 255));
         }
         return convertView;

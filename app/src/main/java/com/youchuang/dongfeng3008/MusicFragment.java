@@ -19,6 +19,9 @@ public class MusicFragment extends Fragment {
     public String[] button_play_mode_name_ico = {"随机播放","顺序播放","全部循环","单曲播放"};
     ImageView button_play_mode_ico;
     TextView button_play_mode_name;
+
+    ImageView album_icon;
+    TextView song_name,zhuanji_name,chuangzhe_name,num_order;
     public MusicFragment() {
         // Required empty public constructor
     }
@@ -30,6 +33,12 @@ public class MusicFragment extends Fragment {
         View view  =inflater.inflate(R.layout.fragment_music, container, false);
         button_play_mode_ico = (ImageView) view.findViewById(R.id.button_play_mode_ico);
         button_play_mode_name = (TextView) view.findViewById(R.id.button_play_mode_name);
+
+        album_icon = (ImageView) view.findViewById(R.id.album_icon);
+        song_name = (TextView) view.findViewById(R.id.song_name);
+        zhuanji_name = (TextView) view.findViewById(R.id.zhuanji_name);
+        chuangzhe_name = (TextView) view.findViewById(R.id.chuangzhe_name);
+        num_order = (TextView) view.findViewById(R.id.num_order);
         return view;
     }
 
