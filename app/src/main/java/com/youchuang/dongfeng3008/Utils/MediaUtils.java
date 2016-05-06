@@ -39,7 +39,7 @@ public class MediaUtils {
 
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,
-                MediaStore.Audio.Media._ID,null,
+                MediaStore.Audio.Media._ID+"=?",new String[]{String.valueOf(_id)},
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 
         Mp3Info mp3Info = null;
@@ -71,6 +71,17 @@ public class MediaUtils {
         return mp3Info;
     }
 
+    public static int getMp3Nums(Context context){
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                new String[]{MediaStore.Audio.Media._ID},
+                MediaStore.Audio.Media.DURATION+">=180000",null,
+                MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+
+        int nums = cursor.getCount();
+        cursor.close();
+        return nums;
+    }
 
 
     public static long[] getMp3InfoIds(Context context){

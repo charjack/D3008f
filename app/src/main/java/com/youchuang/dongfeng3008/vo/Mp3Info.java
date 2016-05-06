@@ -93,4 +93,20 @@ public class Mp3Info {
     public void setIsMusic(int isMusic) {
         this.isMusic = isMusic;
     }
+
+    @Override
+    public String toString() {
+        return "Mp3Info{" +
+                "id=" + id +
+                ", mp3InfoId=" + mp3InfoId +
+                ", tittle='" + tittle + '\'' +
+                ", artist='" + artist + '\'' +
+                ", album='" + album + '\'' +
+                ", albumId=" + albumId +
+                ", duration=" + duration +
+                ", size=" + size +
+                ", url='" + url + '\'' +
+                ", isMusic=" + isMusic +
+                '}';
+    }
 }

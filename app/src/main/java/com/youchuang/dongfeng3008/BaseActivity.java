@@ -57,12 +57,12 @@ public abstract class BaseActivity extends Activity{
     private PlayMusicService.MusicUpdateListener musicUpdateListener = new PlayMusicService.MusicUpdateListener(){
         @Override
         public void onPublic(int progress) {
-            publish(progress);
+                publish(progress);
         }
 
         @Override
         public void onChange(int position) {
-            change(position);
+                change(position);
         }
 
         @Override

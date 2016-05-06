@@ -13,7 +13,9 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="landscape" >
+            android:screenOrientation="landscape"
+             >
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -27,6 +29,11 @@
             android:exported="true" >
         </service>
 
+        <activity
+            android:name=".PPTActivity"
+            android:label="@string/title_activity_ppt"
+            android:screenOrientation="landscape" >
+        </activity>
     </application>
 
 </manifest>

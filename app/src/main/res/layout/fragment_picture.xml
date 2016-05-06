@@ -1,0 +1,27 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@mipmap/background"
+    tools:context="com.youchuang.dongfeng3008.PictureFragment">
+
+    <ImageView
+        android:id="@+id/big_pic_show"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:scaleType="fitXY"
+        />
+
+    <TextView
+        android:id="@+id/pic_shanglan_textview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@mipmap/shanglan_pic"
+        android:text="图片文件夹名"
+        android:textSize="30sp"
+        android:textColor="#ffffff"
+        android:gravity="center"
+        android:layout_gravity="top"
+        android:visibility="gone"/>
+</FrameLayout>

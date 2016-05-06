@@ -26,7 +26,7 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     public static final int ORDER_PLAY = 1;   //顺序
     public static final int RECELY_PLAY = 2;  //全部循环
     public static final int SINGLE_PLAY = 3;  //单曲循环
-    public int play_mode = RANDOM_PLAY;
+    public int play_mode = BaseApp.music_play_mode;
 
     public ArrayList<Mp3Info> getMp3Infos() {
         return mp3Infos;
@@ -49,9 +49,17 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     private Random random = new Random();
     @Override
     public void onCompletion(MediaPlayer mp) {
+        if(play_mode != BaseApp.music_play_mode){
+            play_mode = BaseApp.music_play_mode;
+        }
             switch(play_mode){
                 case RANDOM_PLAY:
-                    play(random.nextInt(mp3Infos.size()));
+                    if(random.nextInt(mp3Infos.size()) == currentPosition) {
+                        play(random.nextInt(mp3Infos.size()));
+                    }
+                    else{
+                        play(random.nextInt(mp3Infos.size()));
+                    }
                     break;
                 case ORDER_PLAY:
                     nextOrder(); //判断最后一首歌的时候停止
@@ -68,7 +76,7 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
 
     public void play(int position){
         Mp3Info mp3Info = null;
-        if(position<0&&position>=mp3Infos.size()){
+        if(position<0 || position>=mp3Infos.size()){
             position = 0;
         }
         mp3Info = mp3Infos.get(position);
@@ -118,7 +126,7 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     public void nextOrder(){
         if(currentPosition+1 >= mp3Infos.size()){
             mPlayer.stop();
-            musicUpdateListener.onStop(1);
+            musicUpdateListener.onStop(1);  //顺序播放，到最后一首停止
         }else
         {
             currentPosition++;
