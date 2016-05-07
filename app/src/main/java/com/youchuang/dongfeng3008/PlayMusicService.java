@@ -2,6 +2,7 @@ package com.youchuang.dongfeng3008;
 
 import android.app.Service;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
@@ -47,6 +48,7 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     }
 
     private Random random = new Random();
+
     @Override
     public void onCompletion(MediaPlayer mp) {
         if(play_mode != BaseApp.music_play_mode){
@@ -76,6 +78,45 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
 
     public void play(int position){
         Mp3Info mp3Info = null;
+        AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
+        am.requestAudioFocus(new AudioManager.OnAudioFocusChangeListener() {
+            @Override
+            public void onAudioFocusChange(int focusChange) {
+                switch (focusChange) {
+                    case AudioManager.AUDIOFOCUS_GAIN:  //获得焦点
+                        System.out.println("获得焦点");
+                        mPlayer.setVolume(1.0f, 1.0f);
+                        break;
+                    case AudioManager.AUDIOFOCUS_LOSS://长时间失去焦点
+                        System.out.println("长时间失去焦点");
+                        //只有退出了界面才去判定长时间对视焦点
+                        if (mPlayer != null && BaseApp.exitUI) {
+                            if (mPlayer.isPlaying()) {
+                                mPlayer.stop();
+                            }
+                            //     mPlayer.release();
+                        }
+                        break;
+                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT://暂时失去，很快重新获取，可以保留资源
+                        System.out.println("暂时失去，很快重新获取，可以保留资源");
+                        if (mPlayer != null) {
+                            if (mPlayer.isPlaying()) {
+                                mPlayer.stop();
+                            }
+                        }
+                        break;
+                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK://暂时失去焦点，声音降低，但还是在播放
+                        System.out.println("暂时失去焦点，声音降低，但还是在播放");
+                        if (mPlayer != null) {
+                            if (mPlayer.isPlaying()) {
+                                mPlayer.setVolume(0.1f, 0.1f);
+                            }
+                        }
+                        break;
+                }
+            }
+        }, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
         if(position<0 || position>=mp3Infos.size()){
             position = 0;
         }
@@ -190,12 +231,13 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
 
         //下面这两个参数以后需要从sp中获取
         currentPosition = 0;
-        play_mode = RANDOM_PLAY;
+        play_mode = BaseApp.music_play_mode;
 
-        mPlayer = new MediaPlayer();
         mp3Infos = MediaUtils.getMp3Infos(this);
+        mPlayer = new MediaPlayer();
         mPlayer.setOnCompletionListener(this);
         mPlayer.setOnErrorListener(this);
+
         es.execute(updateStatusRunnable);
     }
     Runnable updateStatusRunnable = new Runnable() {

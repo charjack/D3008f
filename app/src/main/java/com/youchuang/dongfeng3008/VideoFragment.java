@@ -173,11 +173,9 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
-                //暂时不做处理，不自动进行下一个视频播放
+                //当前视频播放完之后，记录播放时间为0
+                MainActivity.mp4Infos.get(BaseApp.current_video_play_num).setVideo_item_progressed(0);
 
-//                if(mp.getCurrentPosition()+15 > MainActivity.mp4Infos.get(currentVideoIndexToPlay).getDuration()){
-//                    MainActivity.mp4Infos.get(currentVideoIndexToPlay).setVideo_item_progressed(0);
-//                }
 
                 if (BaseApp.current_video_play_num + 1 >= MainActivity.mp4Infos.size()) {
                     mediaPlayer.stop();
@@ -332,7 +330,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
 //        BaseApp.current_video_play_num  = currentVideoIndexToPlay;
 
         currentVideoProgress = (int)MainActivity.mp4Infos.get(BaseApp.current_video_play_num).getVideo_item_progressed();
-        System.out.println("play_video:--------"+currentVideoProgress);
+        System.out.println("play_video:--------" + currentVideoProgress);
 
         if(selectfromuser == false){
             try {

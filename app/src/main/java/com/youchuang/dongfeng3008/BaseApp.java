@@ -30,11 +30,13 @@ public class BaseApp extends Application{
     public static boolean ifMusicLoaded = false;
     public static boolean ifVideoLoaded = false;
     public static boolean iffirststart = true;
-
+    public static Context context;
+    public static boolean exitUI = false;
     public static DbUtils dbUtils;
     @Override
     public void onCreate() {
         super.onCreate();
+        context = getApplicationContext();
         dbUtils = DbUtils.create(getApplicationContext(),"DongfengVideoSave.db");
 
 //        SharedPreferences mySharedPreferences = getSharedPreferences("DongfengDataSave", Activity.MODE_PRIVATE);

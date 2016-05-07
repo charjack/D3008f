@@ -12,6 +12,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -33,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.lidroid.xutils.db.sqlite.Selector;
@@ -40,7 +42,9 @@ import com.lidroid.xutils.exception.DbException;
 import com.youchuang.dongfeng3008.Utils.MediaUtils;
 import com.youchuang.dongfeng3008.Utils.Mp4MediaUtils;
 import com.youchuang.dongfeng3008.Utils.MyImageView;
+import com.youchuang.dongfeng3008.Utils.MyListView;
 import com.youchuang.dongfeng3008.Utils.NativeImageLoader;
+import com.youchuang.dongfeng3008.Utils.NoScrollGridView;
 import com.youchuang.dongfeng3008.Utils.PicMediaUtils;
 import com.youchuang.dongfeng3008.vo.Mp3Info;
 import com.youchuang.dongfeng3008.vo.Mp4Info;
@@ -74,8 +78,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     TextView no_music_resource;
     MymusiclistviewAdapter mymusiclistviewAdapter;
     MyvideolistviewAdapter myvideolistviewAdapter;
+
     MyGridViewAdapter myGridViewAdapter;
     MyGridViewAdapter2 myGridViewAdapter2;
+
     static ArrayList<Mp3Info>  mp3Infos = new ArrayList<>();
     static ArrayList<Mp4Info> mp4Infos = new ArrayList<>();
     static ArrayList<PicInfo> picInfos = new ArrayList<>(); //进行异步加载
@@ -126,12 +132,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
 
         leibieliebiao = (RelativeLayout) findViewById(R.id.leibieliebiao);
+
         musicvideolist = (ListView) findViewById(R.id.musicvideolist);
         musicvideolist.setOnItemClickListener(this);
         loading_layout = (LinearLayout) findViewById(R.id.loading_layout);
         frame_image = (ImageView) findViewById(R.id.frame_image);
         no_music_resource = (TextView) findViewById(R.id.no_music_resource);
         gridview_id = (GridView) findViewById(R.id.gridview_id);
+
 
         gridview_id.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -195,7 +203,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     @Override
     protected void onResume() {
         super.onResume();
-
+        BaseApp.exitUI = false;
         if(BaseApp.current_fragment == 2){
             //改变底栏//防止按返回键后，重新进入，底栏显示不正确
             button_layout.setBackgroundResource(R.mipmap.dilan_pic);
@@ -207,8 +215,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             button_xiaqu.setImageResource(R.mipmap.xiaqu_pic);
             button_liebiao.setImageResource(R.mipmap.liebiao_pic);
         }
-        ///这里为什么要重新加载啊、、、、、、、、、、、、、、、、、、、、、??????????????????????????稍后验证考虑去掉
-    //    new MyAsyncTask().execute();
+
+        AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
+        am.requestAudioFocus(new AudioManager.OnAudioFocusChangeListener() {
+            @Override
+            public void onAudioFocusChange(int focusChange) {
+            }
+        }, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+
+        myHandler.sendEmptyMessage(23);
         bindPlayMusicService();
     }
 
@@ -216,6 +231,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     protected void onPause() {
         super.onPause();
         unbindPlayMusicService();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        BaseApp.exitUI = true;
     }
 
     class MyHandler extends Handler{
@@ -233,7 +254,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         //数据获取结束准备刷新
                         if (BaseApp.ifMusicLoaded == false) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 
                             frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -242,14 +265,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             no_music_resource.setText("加载中");
                         }else if (mp3Infos == null || mp3Infos.size() == 0) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
                             frame_image.setImageResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         } else {
                             loading_layout.setVisibility(View.GONE);
-                            musicvideolist.setVisibility(View.VISIBLE);
+
                             gridview_id.setVisibility(View.GONE);
+
+                            musicvideolist.setVisibility(View.VISIBLE);
+                        //    musicvideolist.requestFocusFromTouch();
 
                             if (mymusiclistviewAdapter != null) {
                                 mymusiclistviewAdapter = new MymusiclistviewAdapter(MainActivity.this, mp3Infos);
@@ -260,9 +288,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             }
 
                             if(BaseApp.current_music_play_num < 0){
-                                musicvideolist.setSelection(0);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(0);
+
                             } else{
-                                musicvideolist.setSelection(BaseApp.current_music_play_num);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(BaseApp.current_music_play_num);
                             }
                             mymusiclistviewAdapter.notifyDataSetChanged();
                         }
@@ -318,7 +355,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         //数据获取结束准备刷新
                         if (BaseApp.ifVideoLoaded == false) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 
                             frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -328,15 +367,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             no_music_resource.setText("加载中");
                         } else if (mp4Infos == null || mp4Infos.size() == 0) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 //                            frame_image.setImageResource(R.mipmap.jinggao_ico);
                             frame_image.setBackgroundResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         } else {
                             loading_layout.setVisibility(View.GONE);
-                            musicvideolist.setVisibility(View.VISIBLE);
+
                             gridview_id.setVisibility(View.GONE);
+
+                            musicvideolist.setVisibility(View.VISIBLE);
+                         //   musicvideolist.requestFocusFromTouch();
 
                             if (myvideolistviewAdapter != null) {
                                 myvideolistviewAdapter = new MyvideolistviewAdapter(MainActivity.this, mp4Infos);
@@ -346,11 +390,32 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 musicvideolist.setAdapter(myvideolistviewAdapter);
                             }
                             if(BaseApp.current_video_play_num < 0){
-                                musicvideolist.setSelection(0);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(0);
+
                             } else{
-                                musicvideolist.setSelection(BaseApp.current_video_play_num);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(BaseApp.current_music_play_num);
+
                             }
                             myvideolistviewAdapter.notifyDataSetChanged();
+                        }
+                    }
+                    break;
+                case 23://用户按下Home键返回来之后，需要自动继续播放
+                    if(BaseApp.current_fragment ==1 && videoFragment != null && mp4Infos!=null && mp4Infos.get(BaseApp.current_video_play_num)!=null){
+
+                        button_bofang.setImageResource(R.mipmap.bofang);
+                        videoFragment.play_video(mp4Infos.get(BaseApp.current_video_play_num).getData());
+                        if(videoFragment.ispause){
+                            button_bofang.setImageResource(R.mipmap.zanting);
+                            videoFragment.pause();
                         }
                     }
                     break;
@@ -398,7 +463,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
                         if (BaseApp.ifPicloaded == false) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 
                             frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -408,14 +475,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             no_music_resource.setText("加载中");
                         } else if (picInfos == null || picInfos.size() == 0) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
                             frame_image.setBackgroundResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         }else{
                             loading_layout.setVisibility(View.GONE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.VISIBLE);
+
 
                             if(myGridViewAdapter2 != null){
                             }else{
@@ -424,9 +496,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 gridview_id.setAdapter(myGridViewAdapter2);
                             }
                             if(BaseApp.current_pic_play_num < 0){
-                                gridview_id.setSelection(0);
+
+                                        gridview_id.setFocusable(true);
+                                        gridview_id.setFocusableInTouchMode(true);
+                                        gridview_id.requestFocus();
+                                        gridview_id.setSelection(0);
+
                             } else{
-                                gridview_id.setSelection(BaseApp.current_pic_play_num);
+                                        gridview_id.setFocusable(true);
+                                        gridview_id.setFocusableInTouchMode(true);
+                                        gridview_id.requestFocus();
+                                        gridview_id.setSelection(BaseApp.current_music_play_num);
                             }
                             myGridViewAdapter2.notifyDataSetChanged();
                         }
@@ -533,8 +613,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     }else{
                         if(playMusicService.isPause()){
                             button_bofang.setImageResource(R.mipmap.bofang);
-                            playMusicService.start();}
-                        else{
+                            playMusicService.start();
+                        }else{
                             playMusicService.play(BaseApp.current_music_play_num);
                         }
                     }
@@ -614,7 +694,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                   //      mp3Infos = MediaUtils.getMp3Infos(this);
                         if (BaseApp.ifMusicLoaded == false) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 
                             frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -623,14 +705,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             no_music_resource.setText("加载中");
                         }else if (mp3Infos == null || mp3Infos.size() == 0) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
                             frame_image.setImageResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         } else {
                             loading_layout.setVisibility(View.GONE);
-                            musicvideolist.setVisibility(View.VISIBLE);
+
                             gridview_id.setVisibility(View.GONE);
+
+                            musicvideolist.setVisibility(View.VISIBLE);
+                         //
                             if (mymusiclistviewAdapter != null) {
                                 mymusiclistviewAdapter = new MymusiclistviewAdapter(MainActivity.this, mp3Infos);
                                 musicvideolist.setAdapter(mymusiclistviewAdapter);
@@ -639,9 +726,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 musicvideolist.setAdapter(mymusiclistviewAdapter);
                             }
                             if(BaseApp.current_music_play_num<0){
-                                musicvideolist.setSelection(BaseApp.current_music_play_num + 1);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(0);
+
+
                             } else{
-                                musicvideolist.setSelection(BaseApp.current_music_play_num);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(BaseApp.current_music_play_num);
+
                             }
                             mymusiclistviewAdapter.notifyDataSetChanged();
                         }
@@ -650,7 +748,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
                         if (BaseApp.ifVideoLoaded == false) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 
                             frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -660,15 +760,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             no_music_resource.setText("加载中");
                         } else if (mp4Infos == null || mp4Infos.size() == 0) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 //                            frame_image.setImageResource(R.mipmap.jinggao_ico);
                             frame_image.setBackgroundResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         } else {
                             loading_layout.setVisibility(View.GONE);
-                            musicvideolist.setVisibility(View.VISIBLE);
+
                             gridview_id.setVisibility(View.GONE);
+
+                            musicvideolist.setVisibility(View.VISIBLE);
+                         //   musicvideolist.requestFocusFromTouch();
                             if (myvideolistviewAdapter != null) {
                                 myvideolistviewAdapter = new MyvideolistviewAdapter(MainActivity.this, mp4Infos);
                                 musicvideolist.setAdapter(myvideolistviewAdapter);
@@ -678,9 +783,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             }
 
                             if(BaseApp.current_video_play_num < 0){
-                                musicvideolist.setSelection(BaseApp.current_video_play_num + 1);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(0);
+
                             } else{
-                                musicvideolist.setSelection(BaseApp.current_video_play_num);
+
+                                        musicvideolist.setFocusable(true);
+                                        musicvideolist.setFocusableInTouchMode(true);
+                                        musicvideolist.requestFocus();
+                                        musicvideolist.setSelection(BaseApp.current_music_play_num);
+
                             }
                             myvideolistviewAdapter.notifyDataSetChanged();
                         }
@@ -689,7 +804,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
                         if (BaseApp.ifPicloaded == false) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 
                             frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -699,15 +816,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             no_music_resource.setText("加载中");
                         } else if (picInfos == null || picInfos.size() == 0) {
                             loading_layout.setVisibility(View.VISIBLE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.GONE);
 //                            frame_image.setImageResource(R.mipmap.jinggao_ico);
                             frame_image.setBackgroundResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         }else{
                             loading_layout.setVisibility(View.GONE);
+
                             musicvideolist.setVisibility(View.GONE);
+
                             gridview_id.setVisibility(View.VISIBLE);
+                         //   gridview_id.requestFocusFromTouch();
                             if(myGridViewAdapter2 != null){
                             }else{
                                 System.out.println("picInfos is OK,come to update the gridview...");
@@ -715,9 +837,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 gridview_id.setAdapter(myGridViewAdapter2);
                             }
                             if(BaseApp.current_pic_play_num < 0){
-                                gridview_id.setSelection(0);
+
+                                        gridview_id.setFocusable(true);
+                                        gridview_id.setFocusableInTouchMode(true);
+                                        gridview_id.requestFocus();
+                                        gridview_id.setSelection(0);
+
                             } else{
-                                gridview_id.setSelection(BaseApp.current_pic_play_num);
+
+                                        gridview_id.setFocusable(true);
+                                        gridview_id.setFocusableInTouchMode(true);
+                                        gridview_id.requestFocus();
+                                        gridview_id.setSelection(BaseApp.current_music_play_num);
+
                             }
                             myGridViewAdapter2.notifyDataSetChanged();
                         }
@@ -736,7 +868,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
                 if (BaseApp.ifMusicLoaded == false) {
                     loading_layout.setVisibility(View.VISIBLE);
+
                     musicvideolist.setVisibility(View.GONE);
+
                     gridview_id.setVisibility(View.GONE);
 
                     frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -745,14 +879,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     no_music_resource.setText("加载中");
                 }else if (mp3Infos == null || mp3Infos.size() == 0) {
                     loading_layout.setVisibility(View.VISIBLE);
+
                     musicvideolist.setVisibility(View.GONE);
+
                     gridview_id.setVisibility(View.GONE);
                     frame_image.setImageResource(R.mipmap.jinggao_ico);
                     no_music_resource.setText("无文件");
                 } else {
                     loading_layout.setVisibility(View.GONE);
-                    musicvideolist.setVisibility(View.VISIBLE);
+
                     gridview_id.setVisibility(View.GONE);
+
+                    musicvideolist.setVisibility(View.VISIBLE);
+                //    musicvideolist.requestFocusFromTouch();
                     if (mymusiclistviewAdapter != null) {
                         mymusiclistviewAdapter = new MymusiclistviewAdapter(MainActivity.this, mp3Infos);
                         musicvideolist.setAdapter(mymusiclistviewAdapter);
@@ -760,10 +899,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         mymusiclistviewAdapter = new MymusiclistviewAdapter(MainActivity.this, mp3Infos);
                         musicvideolist.setAdapter(mymusiclistviewAdapter);
                     }
+
                     if(BaseApp.current_music_play_num<0){
-                        musicvideolist.setSelection(BaseApp.current_music_play_num + 1);
+
+                                musicvideolist.setFocusable(true);
+                                musicvideolist.setFocusableInTouchMode(true);
+                                musicvideolist.requestFocus();
+                                musicvideolist.setSelection(0);
+
                     } else{
-                        musicvideolist.setSelection(BaseApp.current_music_play_num);
+
+                                musicvideolist.setFocusable(true);
+                                musicvideolist.setFocusableInTouchMode(true);
+                                musicvideolist.requestFocus();
+                                musicvideolist.setSelection(BaseApp.current_music_play_num);
+
                     }
                     mymusiclistviewAdapter.notifyDataSetChanged();
                 }
@@ -776,7 +926,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
                 if (BaseApp.ifVideoLoaded == false) {
                     loading_layout.setVisibility(View.VISIBLE);
+
                     musicvideolist.setVisibility(View.GONE);
+
                     gridview_id.setVisibility(View.GONE);
 
                     frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -786,15 +938,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     no_music_resource.setText("加载中");
                 } else if (mp4Infos == null || mp4Infos.size() == 0) {
                     loading_layout.setVisibility(View.VISIBLE);
+
                     musicvideolist.setVisibility(View.GONE);
+
                     gridview_id.setVisibility(View.GONE);
 //                            frame_image.setImageResource(R.mipmap.jinggao_ico);
                     frame_image.setBackgroundResource(R.mipmap.jinggao_ico);
                     no_music_resource.setText("无文件");
                 } else {
                     loading_layout.setVisibility(View.GONE);
-                    musicvideolist.setVisibility(View.VISIBLE);
+
                     gridview_id.setVisibility(View.GONE);
+
+                    musicvideolist.setVisibility(View.VISIBLE);
+                 //   musicvideolist.requestFocusFromTouch();
                     if (myvideolistviewAdapter != null) {
                         myvideolistviewAdapter = new MyvideolistviewAdapter(MainActivity.this, mp4Infos);
                         musicvideolist.setAdapter(myvideolistviewAdapter);
@@ -804,9 +961,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     }
 
                     if(BaseApp.current_video_play_num < 0){
-                        musicvideolist.setSelection(0);
+
+                                musicvideolist.setFocusable(true);
+                                musicvideolist.setFocusableInTouchMode(true);
+                                musicvideolist.requestFocus();
+                                musicvideolist.setSelection(0);
+
                     } else{
-                        musicvideolist.setSelection(BaseApp.current_video_play_num);
+
+                                musicvideolist.setFocusable(true);
+                                musicvideolist.setFocusableInTouchMode(true);
+                                musicvideolist.requestFocus();
+                                musicvideolist.setSelection(BaseApp.current_music_play_num);
+
                     }
                     myvideolistviewAdapter.notifyDataSetChanged();
                 }
@@ -819,7 +986,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
                 if (BaseApp.ifPicloaded == false) {
                     loading_layout.setVisibility(View.VISIBLE);
+
                     musicvideolist.setVisibility(View.GONE);
+
                     gridview_id.setVisibility(View.GONE);
 
                     frame_image.setBackgroundResource(R.drawable.loading_ico);
@@ -829,15 +998,20 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     no_music_resource.setText("加载中");
                 } else if (picInfos == null || picInfos.size() == 0) {
                     loading_layout.setVisibility(View.VISIBLE);
+
                     musicvideolist.setVisibility(View.GONE);
+
                     gridview_id.setVisibility(View.GONE);
 //                            frame_image.setImageResource(R.mipmap.jinggao_ico);
                     frame_image.setBackgroundResource(R.mipmap.jinggao_ico);
                     no_music_resource.setText("无文件");
                 }else{
                     loading_layout.setVisibility(View.GONE);
+
                     musicvideolist.setVisibility(View.GONE);
+
                     gridview_id.setVisibility(View.VISIBLE);
+               //     gridview_id.requestFocusFromTouch();
                     if(myGridViewAdapter2 != null){
                     }else{
                         System.out.println("picInfos is OK,come to update the gridview...");
@@ -845,9 +1019,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         gridview_id.setAdapter(myGridViewAdapter2);
                     }
                     if(BaseApp.current_pic_play_num < 0){
-                        gridview_id.setSelection(0);
+                                gridview_id.setFocusable(true);
+                                gridview_id.setFocusableInTouchMode(true);
+                                gridview_id.requestFocus();
+                                gridview_id.setSelection(0);
                     } else{
-                        gridview_id.setSelection(BaseApp.current_pic_play_num);
+                                gridview_id.setFocusable(true);
+                                gridview_id.setFocusableInTouchMode(true);
+                                gridview_id.requestFocus();
+                                gridview_id.setSelection(BaseApp.current_music_play_num);
                     }
                     myGridViewAdapter2.notifyDataSetChanged();
                 }
@@ -1228,8 +1408,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
         }
     }
-
-
 
     @Override
     protected void onDestroy() {
