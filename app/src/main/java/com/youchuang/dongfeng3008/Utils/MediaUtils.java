@@ -12,6 +12,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
+import com.youchuang.dongfeng3008.BaseApp;
 import com.youchuang.dongfeng3008.R;
 import com.youchuang.dongfeng3008.vo.Mp3Info;
 
@@ -256,8 +257,9 @@ public class MediaUtils {
 
     public static Bitmap getArtwork(Context context,long song_id,
                                     long album_id,boolean allowdefault,boolean small){
-
-        System.out.println("----------enter getartwork");
+        if(BaseApp.ifdebug) {
+            System.out.println("MediaUtils-getArtwork---------enter getartwork");
+        }
         if(album_id<0){
             if(song_id<0){
                 Bitmap bm = getArtworkFromFile(context,song_id,-1);
@@ -274,12 +276,16 @@ public class MediaUtils {
 
         ContentResolver res = context.getContentResolver();
         Uri uri = ContentUris.withAppendedId(albumArtUri,album_id);
-        System.out.println("----------uri"+uri);
+        if(BaseApp.ifdebug) {
+            System.out.println("MediaUtils-getArtwork----------uri" + uri);
+        }
         if(uri!=null){
             InputStream in = null;
 
             try {
-                System.out.println("----------11");
+                if(BaseApp.ifdebug) {
+                    System.out.println("MediaUtils-getArtwork----------11");
+                }
                 in= res.openInputStream(uri);
 //                try{
 //                    in= res.openInputStream(uri);
@@ -287,12 +293,16 @@ public class MediaUtils {
 //                    System.out.println(e);
 //                    e.printStackTrace();
 //                }
-                System.out.println("----------12"+in);
+                if(BaseApp.ifdebug){
+                    System.out.println("MediaUtils-getArtwork----------12"+in);
+                }
                 BitmapFactory.Options options = new BitmapFactory.Options();
                 options.inSampleSize = 1;
                 options.inJustDecodeBounds = true;
                 BitmapFactory.decodeStream(in, null, options);
-                System.out.println("----------13"+"----"+small);
+                if(BaseApp.ifdebug) {
+                    System.out.println("MediaUtils-getArtwork----------13" + "----" + small);
+                }
                 if(small){
                     options.inSampleSize = computeSampleSize(options,40);
                 }else{
@@ -307,7 +317,9 @@ public class MediaUtils {
 
 
             } catch (FileNotFoundException e) {
-                System.out.println("----------21"+"----");
+                if(BaseApp.ifdebug) {
+                    System.out.println("MediaUtils-getArtwork----------21" + "----");
+                }
                 Bitmap bm = getArtworkFromFile(context,song_id,album_id);
                 if(bm!=null){
                     if (bm.getConfig() ==null){
@@ -336,7 +348,9 @@ public class MediaUtils {
 
     private static int computeSampleSize(BitmapFactory.Options options, int i) {
 
-        System.out.println("----enter computesamplesize");
+        if(BaseApp.ifdebug) {
+            System.out.println("MediaUtils-computeSampleSize----enter computesamplesize");
+        }
         //获取位图的原宽高
         int w = options.outWidth;
         int h = options.outHeight;
@@ -350,7 +364,9 @@ public class MediaUtils {
                 inSampleSize = Math.round((float)w / (float)i);
             }
         }
-        System.out.println("inSampleSize="+inSampleSize);
+        if(BaseApp.ifdebug) {
+            System.out.println("MediaUtils-computeSampleSize--inSampleSize=" + inSampleSize);
+        }
         return inSampleSize;
 
     }

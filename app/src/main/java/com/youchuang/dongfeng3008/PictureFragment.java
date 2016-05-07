@@ -44,7 +44,7 @@ import java.util.TimerTask;
  * A simple {@link Fragment} subclass.
  */
 public class PictureFragment extends Fragment{
-
+    private static final String TAG = "PictureFragment";
     ImageView big_pic_show;
     MyPicHandler myPicHandler;
     TextView pic_shanglan_textview;
@@ -68,6 +68,7 @@ public class PictureFragment extends Fragment{
     int dstHeight;
     int dstWidth;
     private boolean ifzoom = false;
+    PicUIUpdateListener picUIUpdateListener;
 
     public PictureFragment() {
         // Required empty public constructor
@@ -77,6 +78,7 @@ public class PictureFragment extends Fragment{
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         ctx = (Context) activity;
+        picUIUpdateListener =(PicUIUpdateListener)activity;
     }
 
     @Override
@@ -98,29 +100,37 @@ public class PictureFragment extends Fragment{
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
+
+
                 if(ifzoom){
 
-                }else {  //仅仅在不放大的情况下显示
-                    if (isshowtitle) {//标题显示了，需要隐藏
-                        pic_shanglan_textview.setVisibility(View.GONE);
-                        isshowtitle = false;
-                    } else {
-                        String path = MainActivity.picInfos.get(BaseApp.current_pic_play_num).getData();
-                        String parentName = new File(path).getParentFile().getName();
-                        pic_shanglan_textview.setVisibility(View.VISIBLE);
-                        pic_shanglan_textview.setText(parentName);
-                        System.out.println(parentName);
-                        isshowtitle = true;
+                }else if(BaseApp.ifopenliebiao == 0){  //仅仅在不放大的情况下显示
+                        if (isshowtitle) {//标题显示了，需要隐藏
+                            pic_shanglan_textview.setVisibility(View.GONE);
+                            isshowtitle = false;
+                        } else {
+                            String path = MainActivity.picInfos.get(BaseApp.current_pic_play_num).getData();
+                            String parentName = new File(path).getParentFile().getName();
+                            pic_shanglan_textview.setVisibility(View.VISIBLE);
+                            pic_shanglan_textview.setText(parentName);
+                            System.out.println(parentName);
+                            isshowtitle = true;
 
-                        Timer pic_timer = new Timer();
-                        pic_timer.schedule(new TimerTask() {
-                            @Override
-                            public void run() {
-                                myPicHandler.sendEmptyMessage(2);
-                            }
-                        },5000);
-                    }
+                            Timer pic_timer = new Timer();
+                            pic_timer.schedule(new TimerTask() {
+                                @Override
+                                public void run() {
+                                    myPicHandler.sendEmptyMessage(2);
+                                }//定时隐藏标题
+                            }, 5000);
+                        }
                 }
+
+                if(BaseApp.ifopenliebiao == 1){
+                    BaseApp.ifopenliebiao = 0;
+                    picUIUpdateListener.onPicLieBiaoClose();
+                }
+
                 switch(event.getAction()){
                     case MotionEvent.ACTION_DOWN:
                         lastX = (int)event.getRawX();
@@ -265,7 +275,9 @@ public class PictureFragment extends Fragment{
     }
 
     public void playPicnext(){
-        System.out.println("current_pic_play_num: "+BaseApp.current_pic_play_num+"picInfos.size()"+PicMediaUtils.getPicCounts(ctx));
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG+"-playPicnext-"+"current_pic_play_num: " + BaseApp.current_pic_play_num + "picInfos.size()" + PicMediaUtils.getPicCounts(ctx));
+        }
         ifzoom = false;
         size = 1;
         if(BaseApp.current_pic_play_num + 1 > MainActivity.picInfos.size() - 1){
@@ -273,7 +285,9 @@ public class PictureFragment extends Fragment{
         } else{
             BaseApp.current_pic_play_num++;
         }
-        System.out.println("current_pic_play_num: "+BaseApp.current_pic_play_num);
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG+"-playPicnext-"+"current_pic_play_num: " + BaseApp.current_pic_play_num);
+        }
         big_pic_show.setImageURI(Uri.parse(MainActivity.picInfos.get(BaseApp.current_pic_play_num).getData()));
     }
     private static void copy(InputStream in, OutputStream out)
@@ -308,7 +322,9 @@ public class PictureFragment extends Fragment{
     }
     //http://blog.csdn.net/gf771115/article/details/40871893 //缩放
     public void pic_play_fangda(){
-        System.out.println("come in fangda...");
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG+"-pic_play_fangda-"+"come in fangda...");
+        }
         ifzoom = true;
         size = bigSize * size;
       //  System.out.println(MainActivity.picInfos.get(BaseApp.current_pic_play_num).getData());
@@ -320,7 +336,9 @@ public class PictureFragment extends Fragment{
          big_pic_show.setImageBitmap(newBitmap);
     }
     public void pic_play_suoxiao(){
-        System.out.println("come in suoxiao...");
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG+"-pic_play_suoxiao-"+"come in suoxiao...");
+        }
         ifzoom = true;
         size = smallSize * size;
         myBitmap = GetLocalOrNetBitmap("file://"+MainActivity.picInfos.get(BaseApp.current_pic_play_num).getData());
@@ -370,7 +388,7 @@ public class PictureFragment extends Fragment{
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what){
-                case 1:
+                case 1://显示大图片
                     big_pic_show.setImageURI(Uri.parse(MainActivity.picInfos.get(msg.arg1).getData()));
                     break;
                 case 2://隐藏标题
@@ -381,5 +399,9 @@ public class PictureFragment extends Fragment{
         }
     }
 
+
+    public interface PicUIUpdateListener{
+        public void onPicLieBiaoClose();
+    }
 
 }

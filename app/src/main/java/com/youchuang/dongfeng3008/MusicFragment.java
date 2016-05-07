@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 /**
@@ -27,6 +28,7 @@ public class MusicFragment extends Fragment {
     SeekBar seekBar1;
     LinearLayout progress_really_layout;
     TextView song_current_time,song_total_time;
+    RelativeLayout mp3_info_ui;
 
     public MusicUIUpdateListener musicUIUpdateListener;
 
@@ -39,6 +41,18 @@ public class MusicFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view  =inflater.inflate(R.layout.fragment_music, container, false);
+
+        mp3_info_ui = (RelativeLayout) view.findViewById(R.id.mp3_info_ui);
+        mp3_info_ui.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (BaseApp.ifopenliebiao == 1) {
+                    BaseApp.ifopenliebiao = 0;
+                    musicUIUpdateListener.onLieBiaoClose();
+                }
+            }
+        });
+
         button_play_mode_ico = (ImageView) view.findViewById(R.id.button_play_mode_ico);
         button_play_mode_name = (TextView) view.findViewById(R.id.button_play_mode_name);
 
@@ -57,11 +71,8 @@ public class MusicFragment extends Fragment {
                     BaseApp.current_music_play_progress = progress;
                     seekBar.setProgress(progress);
                     musicUIUpdateListener.onServiceCommand(1);  //拖动
-
                 }
-
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 musicUIUpdateListener.onServiceCommand(2);  //开始拖
@@ -107,6 +118,7 @@ public class MusicFragment extends Fragment {
     public interface MusicUIUpdateListener{
         public void onUIChange(int position);
         public void onServiceCommand(int i);
+        public void onLieBiaoClose();
     }
 
 }

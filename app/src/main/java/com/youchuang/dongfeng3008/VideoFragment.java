@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
  */
 public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
 
+    private static final String TAG = "VideoFragment";
     SurfaceView surfaceView_video;
     private SurfaceHolder holder;
     private MediaPlayer mp;
@@ -88,7 +89,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         surfaceView_video.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(BaseApp.ifFullScreenState == false){
+                if(!BaseApp.ifFullScreenState){
                     if (ishide) {
                         //show
                         play_video_name.setText(currentVideoName.substring(0, currentVideoName.indexOf(".")));
@@ -129,7 +130,9 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(fromUser){
-                    System.out.println("person change the progress...");
+                    if(BaseApp.ifdebug) {
+                        System.out.println(TAG+"-onCreateView-"+"person change the progress...");
+                    }
                     BaseApp.current_video_play_progress = progress;
                     seekBar.setProgress(progress);
                     mp.seekTo(progress);
@@ -158,7 +161,9 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         holder.setFormat(PixelFormat.TRANSPARENT);
         holder.addCallback(this);
         mp = new MediaPlayer();
-        System.out.println("enter videoView creat...");
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG + "-onCreateView-" + "enter videoView creat...");
+        }
         return video_view;
     }
 
@@ -176,7 +181,6 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                 //当前视频播放完之后，记录播放时间为0
                 MainActivity.mp4Infos.get(BaseApp.current_video_play_num).setVideo_item_progressed(0);
 
-
                 if (BaseApp.current_video_play_num + 1 >= MainActivity.mp4Infos.size()) {
                     mediaPlayer.stop();
                 } else {
@@ -193,7 +197,6 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                         video_total_time.setText(currentVideoTotalTime);
                         currentVideoName = MainActivity.mp4Infos.get(BaseApp.current_video_play_num).getDisplay_name();
                         play_video_name.setText(currentVideoName.substring(0, currentVideoName.indexOf(".")));
-//                        BaseApp.current_video_play_num  = currentVideoIndexToPlay;
 
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -207,7 +210,9 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         currentVideoName  = mp4Info.getDisplay_name();
         currentVideoTotalTimenum = mp4Info.getDuration();   //
         currentVideoTotalTime = Mp4MediaUtils.formatTime(currentVideoTotalTimenum);
-        System.out.println("video start-----" + currentVideoTotalTime);
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG+"-surfaceCreated-"+"video start-----" + currentVideoTotalTime);
+        }
         //第一次进入无法显示进度条和总时长
         seekBar2.setMax((int) currentVideoTotalTimenum);
         video_total_time.setText(currentVideoTotalTime);
@@ -223,7 +228,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
             }
         }, 0, 500);
 
-        if(selectfromactivity ==true) {
+        if(selectfromactivity) {
             selectfromactivity = false;
             play_video(currentVideoPath);
         }
@@ -238,7 +243,9 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
     public void surfaceDestroyed(SurfaceHolder holder) {
         if(mp!=null)
         {
-            System.out.println("enter video Onstop"+mp.getCurrentPosition());
+            if(BaseApp.ifdebug) {
+                System.out.println(TAG+"-surfaceDestroyed-"+"enter video Onstop" + mp.getCurrentPosition());
+            }
             MainActivity.mp4Infos.get(BaseApp.current_video_play_num).setVideo_item_progressed(mp.getCurrentPosition());
             videoUIUpdateListener.onVideoProgressSave();
             if (mp.isPlaying()){
@@ -247,6 +254,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                 mp=null;
             }
         }
+        ishide = true;  //不加上会出现第一次无法全屏
         timer.cancel();
         videoUIUpdateListener.onVideoStateChange();
     }
@@ -300,7 +308,9 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         super.onStop();
         if(mp!=null){
             MainActivity.mp4Infos.get(BaseApp.current_video_play_num).setVideo_item_progressed(mp.getCurrentPosition());
-            System.out.println("enter video Onstop"+MainActivity.mp4Infos.get(BaseApp.current_video_play_num).getVideo_item_progressed());
+            if(BaseApp.ifdebug) {
+                System.out.println(TAG+"-onStop-"+"enter video Onstop" + MainActivity.mp4Infos.get(BaseApp.current_video_play_num).getVideo_item_progressed());
+            }
             videoUIUpdateListener.onVideoProgressSave();
             if (mp.isPlaying()){
                 mp.stop();
@@ -330,9 +340,11 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
 //        BaseApp.current_video_play_num  = currentVideoIndexToPlay;
 
         currentVideoProgress = (int)MainActivity.mp4Infos.get(BaseApp.current_video_play_num).getVideo_item_progressed();
-        System.out.println("play_video:--------" + currentVideoProgress);
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG+"-play_video-"+"play_video:--------" + currentVideoProgress);
+        }
 
-        if(selectfromuser == false){
+        if(!selectfromuser){
             try {
                 mp.reset();
                 mp.setDataSource(Path);//设置播放视频源
@@ -365,7 +377,9 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         }
     }
     public void pause(){
-        System.out.println("pause"+mp.getCurrentPosition());
+        if(BaseApp.ifdebug) {
+            System.out.println(TAG+"-pause-"+"pause" + mp.getCurrentPosition());
+        }
         mp.pause();
         ispause = true;
     }
@@ -389,7 +403,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                         seekBar2.setProgress(currentVideoProgress);
                         video_current_time.setText(Mp4MediaUtils.formatTime(currentVideoProgress));
 
-                        if(BaseApp.ifopenliebiao == 0 && ishide && BaseApp.ifFullScreenState ==false){
+                        if(BaseApp.ifopenliebiao == 0 && ishide && !BaseApp.ifFullScreenState){
                             fullScreen++;
                             if(fullScreen >= 10){
                                 fullScreen = 0;
