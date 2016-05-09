@@ -13,4 +13,5 @@ public class Contents {
     public static final int IMAGE_ITEM_CLICK= 30; //点击gridview的条目消息
     public static final int IMAGE_PPT_COMEBACK= 31; //ppt结束返回消息
     public static final int IMAGE_LOAD_FINISH= 32; //图片加载完成
+    public static final int CHANGE_FRAGMENT_MUSCI_PLAY_MODE = 14;
 }

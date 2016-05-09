@@ -144,7 +144,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         no_music_resource = (TextView) findViewById(R.id.no_music_resource);
         gridview_id = (GridView) findViewById(R.id.gridview_id);
 
-
         gridview_id.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -287,6 +286,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             frame_image.setImageResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         } else {
+
                             loading_layout.setVisibility(View.GONE);
                             gridview_id.setVisibility(View.GONE);
                             musicvideolist.setVisibility(View.VISIBLE);
@@ -336,6 +336,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     }else{
                         BaseApp.current_music_play_num = 0;
                     }
+                    break;
+                case Contents.CHANGE_FRAGMENT_MUSCI_PLAY_MODE:
+                    if(BaseApp.ifdebug){
+                        System.out.println("MainActivity-handlmessage-BaseApp.music_play_mode"+BaseApp.music_play_mode);
+                    }
+                    playMusicService.setPlay_mode(BaseApp.music_play_mode);
+
                     break;
                 case Contents.MUSIC_REFRESH_INFO_UI://2
                     Mp3Info mp3Info = new Mp3Info();
@@ -393,7 +400,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 musicvideolist.setFocusableInTouchMode(true);
                                 musicvideolist.requestFocus();
                                 musicvideolist.setSelection(0);
-
                             } else{
                                 musicvideolist.setFocusable(true);
                                 musicvideolist.setFocusableInTouchMode(true);
@@ -405,7 +411,12 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     }
                     break;
                 case Contents.VIDEO_COME_BACK://用户按下Home键返回来之后，需要自动继续播放 23
+                    if(BaseApp.current_fragment ==0 && musicFragment!= null){
+                        button_play_mode.setImageResource(music_play_mode_resource[BaseApp.music_play_mode]);
+                        musicFragment.changeMusicPlayModeUI(BaseApp.music_play_mode);
+                    }
                     if(BaseApp.current_fragment ==1 && videoFragment != null && mp4Infos!=null && mp4Infos.get(BaseApp.current_video_play_num)!=null){
+                        button_play_mode.setImageResource(music_play_mode_resource[BaseApp.video_play_mode]);
                         button_bofang.setImageResource(R.mipmap.bofang);
                         videoFragment.play_video(mp4Infos.get(BaseApp.current_video_play_num).getData());
                         if(videoFragment.ispause){
@@ -659,7 +670,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             case R.id.button_play_mode:
                 BaseApp.ifopenliebiao = 0;
                 leibieliebiao.setVisibility(View.GONE);
-                if(BaseApp.current_media == 0 && mp3Infos != null && mp3Infos.size() > 0) {
+                if(BaseApp.current_fragment == 0 && mp3Infos != null && mp3Infos.size() > 0) {
                     BaseApp.music_play_mode++;
                     if (BaseApp.music_play_mode >= 4) {
                         BaseApp.music_play_mode = 0;
@@ -674,7 +685,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     button_play_mode.setImageResource(music_play_mode_resource[BaseApp.music_play_mode]);
                     musicFragment.changeMusicPlayModeUI(BaseApp.music_play_mode);
                     playMusicService.setPlay_mode(BaseApp.music_play_mode);
-                }else if(BaseApp.current_media == 1 && mp4Infos != null && mp4Infos.size() > 0) {
+                }else if(BaseApp.current_fragment == 1 && mp4Infos != null && mp4Infos.size() > 0) {
 
                 }
                     break;
@@ -980,7 +991,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         //在current_media是2的情况下，list列表就会被隐藏了。所以不可能跳转
         //改变底栏
-
         button_layout.setBackgroundResource(R.mipmap.dilan);
         button_fangda.setVisibility(View.GONE);
         button_suoxiao.setVisibility(View.GONE);
@@ -991,6 +1001,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         button_liebiao.setImageResource(R.mipmap.liebiao);
 
         if(BaseApp.current_media == 0){
+
+            button_play_mode.setImageResource(music_play_mode_resource[BaseApp.music_play_mode]);
+            //又出现了fragment还没有渲染出来就操作的空指针了。
+          //  musicFragment.changeMusicPlayModeUI(BaseApp.music_play_mode);
+          //  playMusicService.setPlay_mode(BaseApp.music_play_mode);
             BaseApp.current_music_play_num = position;
             mymusiclistviewAdapter.notifyDataSetChanged();
             if(BaseApp.current_fragment != 0) {
@@ -1014,8 +1029,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 BaseApp.current_fragment = 0;
                 BaseApp.isfirststartmusic = 0;//去除第一次启动的接口回调,这样可以重新初始化返回的音乐界面
             }
+            if(BaseApp.ifdebug) {
+                System.out.println("MainActivity-onItemClick-music_play_mode:" + BaseApp.music_play_mode);
+            }
+            playMusicService.setPlay_mode(BaseApp.music_play_mode);
             playMusicService.play(BaseApp.current_music_play_num);
+            myHandler.sendEmptyMessage(Contents.CHANGE_FRAGMENT_MUSCI_PLAY_MODE);
+
         }else if(BaseApp.current_media == 1){
+
+            button_play_mode.setImageResource(music_play_mode_resource[BaseApp.video_play_mode]);
+
             if(BaseApp.ifdebug) {
                 System.out.println(TAG+"-onItemClick-"+"enter the video play...");
             }
@@ -1068,6 +1092,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             musicFragment.song_name.setText(mp3Info.getTittle());
             musicFragment.zhuanji_name.setText(mp3Info.getAlbum());
             musicFragment.chuangzhe_name.setText(mp3Info.getArtist());//
+            musicFragment.changeMusicPlayModeUI(BaseApp.music_play_mode);
             musicFragment.num_order.setText((BaseApp.current_music_play_num + 1) + "/" + mp3Infos.size());
             musicFragment.song_total_time.setText(MediaUtils.formatTime(mp3Info.getDuration()));
             musicFragment.seekBar1.setProgress(0);
@@ -1140,19 +1165,37 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     @Override
     public void onVideoScreenChange(int progress) {
         //改变屏幕大小
-        if(BaseApp.ifFullScreenState){
+        if(BaseApp.ifFullScreenState) {
 
-            Rect frame = new Rect();
-            getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
-            int statusBarHeight = frame.top;
-            if(BaseApp.ifdebug) {
-                System.out.println(TAG+"-onVideoScreenChange-"+"状态栏的高度1:----" + statusBarHeight);
+            if (BaseApp.statebarheight == 0) {
+                Rect frame = new Rect();
+                getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+                BaseApp.statebarheight = frame.top;   //获取状态栏的高度
+                if (BaseApp.ifdebug) {
+                    System.out.println("Mainactivity-onVideoScreenChange-statebarheight" + BaseApp.statebarheight);
+                }
             }
-            int contentTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-            int titleBarHeight = contentTop - statusBarHeight;
-            if(BaseApp.ifdebug) {
-                System.out.println(TAG+"-onVideoScreenChange-"+"标题栏的高度1:----" + titleBarHeight);
-            }
+            if (BaseApp.dibuheight == 0) {
+                BaseApp.dibuheight = button_layout.getHeight();  //获取底栏的高度
+
+                if (BaseApp.ifdebug) {
+                    System.out.println("Mainactivity-onVideoScreenChange-dibuheight" + BaseApp.dibuheight);
+                }
+        }
+
+
+//            Rect frame = new Rect();
+//            getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
+//            int statusBarHeight = frame.top;
+//            if(BaseApp.ifdebug) {
+//                System.out.println(TAG+"-onVideoScreenChange-"+"状态栏的高度1:----" + statusBarHeight);
+//            }
+//            int contentTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
+//            int titleBarHeight = contentTop - statusBarHeight;
+//            if(BaseApp.ifdebug) {
+//                System.out.println(TAG+"-onVideoScreenChange-"+"标题栏的高度1:----" + titleBarHeight);
+//            }
+
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             mRLayout.setSystemUiVisibility(View.INVISIBLE);
             getWindow().setFlags(
@@ -1179,18 +1222,23 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             if(BaseApp.ifdebug) {
                 System.out.println(TAG+"-onVideoScreenChange-"+"状态栏的高度2:----" + statusBarHeight);
             }
-            int contentTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-            int titleBarHeight = contentTop - statusBarHeight;
-            if(BaseApp.ifdebug) {
-                System.out.println(TAG+"-onVideoScreenChange-"+"标题栏的高度2:----" + titleBarHeight);
-            }
+//            int contentTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
+//            int titleBarHeight = contentTop - statusBarHeight;
+//            if(BaseApp.ifdebug) {
+//                System.out.println(TAG+"-onVideoScreenChange-"+"标题栏的高度2:----" + titleBarHeight);
+//            }
             //系统默认去掉了标题栏，只是保留了状态栏，状态栏的高度是63dp，但是返回后获取的高度为0
             if(statusBarHeight == 0) {
                 RelativeLayout.LayoutParams mFramlayout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
-                mFramlayout.setMargins(0,63,0,66);
+                mFramlayout.setMargins(0,BaseApp.statebarheight,0,BaseApp.dibuheight);
                 frame_content.setLayoutParams(mFramlayout);
             }
         }
+    }
+
+    @Override
+    public void onVideoLieBiaoClose() {
+        leibieliebiao.setVisibility(View.GONE);
     }
 
     @Override
@@ -1312,6 +1360,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
 
         @Override
         protected String doInBackground(String... params) {
+
             mp3Infos = MediaUtils.getMp3Infos(MainActivity.this);
             BaseApp.ifMusicLoaded = true;
             myHandler.sendEmptyMessage(Contents.MUSIC_LOAD_FINISH);//12

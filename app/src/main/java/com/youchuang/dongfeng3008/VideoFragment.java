@@ -89,20 +89,33 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         surfaceView_video.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!BaseApp.ifFullScreenState){
-                    if (ishide) {
-                        //show
-                        play_video_name.setText(currentVideoName.substring(0, currentVideoName.indexOf(".")));
-                        play_video_name.setVisibility(View.VISIBLE);
-                        progress_really_layout.setVisibility(View.VISIBLE);
-                        ishide = false;
-                    } else {
-                        //hide
-                        play_video_name.setVisibility(View.GONE);
-                        progress_really_layout.setVisibility(View.GONE);
-                        ishide = true;
+
+                if(!BaseApp.ifFullScreenState) {
+                    if(BaseApp.ifopenliebiao == 0) {
+                        if (ishide) {
+                            //show video name and controller
+                            play_video_name.setText(currentVideoName.substring(0, currentVideoName.indexOf(".")));
+                            play_video_name.setVisibility(View.VISIBLE);
+                            progress_really_layout.setVisibility(View.VISIBLE);
+                            ishide = false;
+                        } else {
+                            //hide video name and controller
+                            play_video_name.setVisibility(View.GONE);
+                            progress_really_layout.setVisibility(View.GONE);
+                            ishide = true;
+                        }
+                    }else{// if(BaseApp.ifopenliebiao == 1)
+                        BaseApp.ifopenliebiao = 0;
+                        videoUIUpdateListener.onVideoLieBiaoClose();
+                        if(!ishide){
+                            //hide video name and controller
+                            play_video_name.setVisibility(View.GONE);
+                            progress_really_layout.setVisibility(View.GONE);
+                            ishide = true;
+                        }
                     }
-                }else{
+                }
+                else{
                     BaseApp.ifFullScreenState = false;
                     //显示小屏幕
                     videoUIUpdateListener.onVideoScreenChange(mp.getCurrentPosition());
@@ -325,6 +338,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         public void onVideoProgressSave();
         public void onVideoStateChange();
         public void onVideoScreenChange(int progress);
+        public void onVideoLieBiaoClose();
     }
 
 
