@@ -8,10 +8,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -41,6 +43,7 @@ import com.lidroid.xutils.db.sqlite.Selector;
 import com.lidroid.xutils.exception.DbException;
 import com.youchuang.dongfeng3008.Utils.MediaUtils;
 import com.youchuang.dongfeng3008.Utils.Mp4MediaUtils;
+import com.youchuang.dongfeng3008.Utils.MyBitMap;
 import com.youchuang.dongfeng3008.Utils.MyImageView;
 import com.youchuang.dongfeng3008.Utils.MyListView;
 import com.youchuang.dongfeng3008.Utils.NativeImageLoader;
@@ -83,7 +86,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     MymusiclistviewAdapter mymusiclistviewAdapter;
     MyvideolistviewAdapter myvideolistviewAdapter;
 
-    MyGridViewAdapter myGridViewAdapter;
+//    MyGridViewAdapter myGridViewAdapter;
     MyGridViewAdapter2 myGridViewAdapter2;
 
     static ArrayList<Mp3Info>  mp3Infos = new ArrayList<>();
@@ -156,6 +159,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 button_bofang.setImageResource(R.mipmap.zanting_pic);
                 button_xiaqu.setImageResource(R.mipmap.xiaqu_pic);
                 button_liebiao.setImageResource(R.mipmap.liebiao_pic);
+
+                gridview_id.setSelector(new ColorDrawable(Color.TRANSPARENT));
+
+                for(int i=0;i<parent.getCount();i++){
+                    View v=parent.getChildAt(i);
+                    if (position == i) {//当前选中的Item改变背景颜色
+                        view.setBackgroundResource(R.mipmap.tupian_p);
+                    } else {
+                        if( v != null)  //在当前页面不会进行刷新，需要自己手动设置背景隐藏
+                            v.setBackgroundResource(0);
+                    }
+                }
                 //点击就发送消息
                 BaseApp.current_pic_play_num = position;
                 Message pic_msg = myHandler.obtainMessage(Contents.IMAGE_ITEM_CLICK);//30
@@ -235,14 +250,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        unbindPlayMusicService();
-    }
+        protected void onPause() {
+            super.onPause();
+            unbindPlayMusicService();
+        }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
+        @Override
+        protected void onStop() {
+            super.onStop();
         BaseApp.exitUI = true;
     }
 
@@ -268,25 +283,19 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         //数据获取结束准备刷新
                         if (!BaseApp.ifMusicLoaded) {
                             loading_layout.setVisibility(View.VISIBLE);
-
                             musicvideolist.setVisibility(View.GONE);
-
                             gridview_id.setVisibility(View.GONE);
-
                             frame_image.setBackgroundResource(R.drawable.loading_ico);
                             frameAnim = (AnimationDrawable) frame_image.getBackground();
                             frameAnim.start();
                             no_music_resource.setText("加载中");
                         }else if (mp3Infos == null || mp3Infos.size() == 0) {
                             loading_layout.setVisibility(View.VISIBLE);
-
                             musicvideolist.setVisibility(View.GONE);
-
                             gridview_id.setVisibility(View.GONE);
                             frame_image.setImageResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         } else {
-
                             loading_layout.setVisibility(View.GONE);
                             gridview_id.setVisibility(View.GONE);
                             musicvideolist.setVisibility(View.VISIBLE);
@@ -300,14 +309,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             }
 
                             if(BaseApp.current_music_play_num < 0){
-                                    musicvideolist.setFocusable(true);
-                                    musicvideolist.setFocusableInTouchMode(true);
-                                    musicvideolist.requestFocus();
+//                                    musicvideolist.setFocusable(true);
+//                                    musicvideolist.setFocusableInTouchMode(true);
+//                                    musicvideolist.requestFocus();
                                     musicvideolist.setSelection(0);
                             } else{
-                                    musicvideolist.setFocusable(true);
-                                    musicvideolist.setFocusableInTouchMode(true);
-                                    musicvideolist.requestFocus();
+//                                    musicvideolist.setFocusable(true);
+//                                    musicvideolist.setFocusableInTouchMode(true);
+//                                    musicvideolist.requestFocus();
                                     musicvideolist.setSelection(BaseApp.current_music_play_num);
                             }
                             mymusiclistviewAdapter.notifyDataSetChanged();
@@ -396,14 +405,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 musicvideolist.setAdapter(myvideolistviewAdapter);
                             }
                             if(BaseApp.current_video_play_num < 0){
-                                musicvideolist.setFocusable(true);
-                                musicvideolist.setFocusableInTouchMode(true);
-                                musicvideolist.requestFocus();
+//                                musicvideolist.setFocusable(true);
+//                                musicvideolist.setFocusableInTouchMode(true);
+//                                musicvideolist.requestFocus();
                                 musicvideolist.setSelection(0);
                             } else{
-                                musicvideolist.setFocusable(true);
-                                musicvideolist.setFocusableInTouchMode(true);
-                                musicvideolist.requestFocus();
+//                                musicvideolist.setFocusable(true);
+//                                musicvideolist.setFocusableInTouchMode(true);
+//                                musicvideolist.requestFocus();
                                 musicvideolist.setSelection(BaseApp.current_music_play_num);
                             }
                             myvideolistviewAdapter.notifyDataSetChanged();
@@ -431,10 +440,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         System.out.println(TAG+"-MyHandler-"+"enter the picture show...");
                     }
                     BaseApp.current_pic_play_num = msg.arg1;
-                    myGridViewAdapter2.notifyDataSetChanged();
-                    if (BaseApp.current_fragment == 0) {
-                        playMusicService.pause();
-                    }
+
+//                    if (BaseApp.current_fragment == 0) {
+//                        playMusicService.pause();
+//                    }
 
                     if (BaseApp.current_fragment != 2) {
                         if(BaseApp.ifdebug){
@@ -445,7 +454,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         FragmentTransaction ft = fm.beginTransaction();
                         fragments.get(BaseApp.current_fragment).onStop();//停止当前的fragment
 
-                        if (pictureFragment.isAdded())   //判断videofragment是否在栈中
+                        if (pictureFragment.isAdded())   //判断PICfragment是否在栈中
                             pictureFragment.onStart();
                         else {
                             ft.add(R.id.media_fragment, pictureFragment);
@@ -465,12 +474,17 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                         }
                         pictureFragment.changeImageShow(BaseApp.current_pic_play_num);
                     }
+                    //这里加入这个的话，图片的加载会变得很慢，但是不加入刷新，如何让选中背景颜色改变呢？
+//                    myGridViewAdapter2.notifyDataSetChanged();
                     break;
                 case Contents.IMAGE_PPT_COMEBACK://处理PPTactivity返回来的消息显示   31
                     if(BaseApp.ifdebug){
                         System.out.println(TAG+"-MyHandler-"+"get message to pause...");
                     }
-                    pictureFragment.big_pic_show.setImageURI(Uri.parse(picInfos.get(BaseApp.current_pic_play_num).getData()));
+                    String mybigPicPath = MainActivity.picInfos.get(BaseApp.current_pic_play_num).getData();
+//                    Bitmap bm = pictureFragment.GetLocalOrNetBitmap("file://" + mybigPicPath);
+                    Bitmap bm = pictureFragment.convertToBitmap(mybigPicPath, 800, 350);
+                    pictureFragment.big_pic_show.setImageBitmap(bm);
                     button_bofang.setImageResource(R.mipmap.zanting_pic);
                     break;
                 case Contents.IMAGE_LOAD_FINISH://32
@@ -496,24 +510,27 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             gridview_id.setVisibility(View.VISIBLE);
 
                             if(myGridViewAdapter2 != null){
+                                myGridViewAdapter2 = new MyGridViewAdapter2(MainActivity.this,picInfos);
+                                gridview_id.setAdapter(myGridViewAdapter2);
                             }else{
                                 if(BaseApp.ifdebug){
                                     System.out.println(TAG+"-MyHandler-"+"picInfos is OK,come to update the gridview...");
                                 }
                                 myGridViewAdapter2 = new MyGridViewAdapter2(MainActivity.this,picInfos);
                                 gridview_id.setAdapter(myGridViewAdapter2);
+//                                myGridViewAdapter2.notifyDataSetChanged();
                             }
                             if(BaseApp.current_pic_play_num < 0){
-                                    gridview_id.setFocusable(true);
-                                    gridview_id.setFocusableInTouchMode(true);
-                                    gridview_id.requestFocus();
+//                                    gridview_id.setFocusable(true);
+//                                    gridview_id.setFocusableInTouchMode(true);
+//                                    gridview_id.requestFocus();
                                     gridview_id.setSelection(0);
 
                             } else{
-                                    gridview_id.setFocusable(true);
-                                    gridview_id.setFocusableInTouchMode(true);
-                                    gridview_id.requestFocus();
-                                    gridview_id.setSelection(BaseApp.current_music_play_num);
+//                                    gridview_id.setFocusable(true);
+//                                    gridview_id.setFocusableInTouchMode(true);
+//                                    gridview_id.requestFocus();
+                                    gridview_id.setSelection(BaseApp.current_pic_play_num);
                             }
                             myGridViewAdapter2.notifyDataSetChanged();
                         }
@@ -740,14 +757,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 musicvideolist.setAdapter(mymusiclistviewAdapter);
                             }
                             if(BaseApp.current_music_play_num<0){
-                                musicvideolist.setFocusable(true);
-                                musicvideolist.setFocusableInTouchMode(true);
-                                musicvideolist.requestFocus();
+//                                musicvideolist.setFocusable(true);
+//                                musicvideolist.setFocusableInTouchMode(true);
+//                                musicvideolist.requestFocus();
                                 musicvideolist.setSelection(0);
                             } else{
-                                musicvideolist.setFocusable(true);
-                                musicvideolist.setFocusableInTouchMode(true);
-                                musicvideolist.requestFocus();
+//                                musicvideolist.setFocusable(true);
+//                                musicvideolist.setFocusableInTouchMode(true);
+//                                musicvideolist.requestFocus();
                                 musicvideolist.setSelection(BaseApp.current_music_play_num);
                             }
                             mymusiclistviewAdapter.notifyDataSetChanged();
@@ -781,14 +798,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 musicvideolist.setAdapter(myvideolistviewAdapter);
                             }
                             if(BaseApp.current_video_play_num < 0){
-                                musicvideolist.setFocusable(true);
-                                musicvideolist.setFocusableInTouchMode(true);
-                                musicvideolist.requestFocus();
+//                                musicvideolist.setFocusable(true);
+//                                musicvideolist.setFocusableInTouchMode(true);
+//                                musicvideolist.requestFocus();
                                 musicvideolist.setSelection(0);
                             } else{
-                                musicvideolist.setFocusable(true);
-                                musicvideolist.setFocusableInTouchMode(true);
-                                musicvideolist.requestFocus();
+//                                musicvideolist.setFocusable(true);
+//                                musicvideolist.setFocusableInTouchMode(true);
+//                                musicvideolist.requestFocus();
                                 musicvideolist.setSelection(BaseApp.current_music_play_num);
                             }
                             myvideolistviewAdapter.notifyDataSetChanged();
@@ -804,18 +821,22 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                             frameAnim.start();
                             no_music_resource.setText("加载中");
                         } else if (picInfos == null || picInfos.size() == 0) {
+                            if(frameAnim != null)
+                                frameAnim.stop();
                             loading_layout.setVisibility(View.VISIBLE);
                             musicvideolist.setVisibility(View.GONE);
                             gridview_id.setVisibility(View.GONE);
-//                            frame_image.setImageResource(R.mipmap.jinggao_ico);
                             frame_image.setBackgroundResource(R.mipmap.jinggao_ico);
                             no_music_resource.setText("无文件");
                         }else{
+                            if(frameAnim != null)
+                                frameAnim.stop();
                             loading_layout.setVisibility(View.GONE);
                             musicvideolist.setVisibility(View.GONE);
                             gridview_id.setVisibility(View.VISIBLE);
-                         //   gridview_id.requestFocusFromTouch();
                             if(myGridViewAdapter2 != null){
+                                myGridViewAdapter2 = new MyGridViewAdapter2(MainActivity.this,picInfos);
+                                gridview_id.setAdapter(myGridViewAdapter2);
                             }else{
                                 if(BaseApp.ifdebug){
                                     System.out.println(TAG+"-onClick-"+"picInfos is OK,come to update the gridview...");
@@ -824,15 +845,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                                 gridview_id.setAdapter(myGridViewAdapter2);
                             }
                             if(BaseApp.current_pic_play_num < 0){
-                                gridview_id.setFocusable(true);
-                                gridview_id.setFocusableInTouchMode(true);
-                                gridview_id.requestFocus();
+//                                gridview_id.setFocusable(true);
+//                                gridview_id.setFocusableInTouchMode(true);
+//                                gridview_id.requestFocus();
                                 gridview_id.setSelection(0);
                             } else{
-                                gridview_id.setFocusable(true);
-                                gridview_id.setFocusableInTouchMode(true);
-                                gridview_id.requestFocus();
-                                gridview_id.setSelection(BaseApp.current_music_play_num);
+//                                gridview_id.setFocusable(true);
+//                                gridview_id.setFocusableInTouchMode(true);
+//                                gridview_id.requestFocus();
+                                gridview_id.setSelection(BaseApp.current_pic_play_num);
                             }
                             myGridViewAdapter2.notifyDataSetChanged();
                         }
@@ -876,14 +897,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     }
 
                     if(BaseApp.current_music_play_num<0){
-                        musicvideolist.setFocusable(true);
-                        musicvideolist.setFocusableInTouchMode(true);
-                        musicvideolist.requestFocus();
+//                        musicvideolist.setFocusable(true);
+//                        musicvideolist.setFocusableInTouchMode(true);
+//                        musicvideolist.requestFocus();
                         musicvideolist.setSelection(0);
                     } else{
-                        musicvideolist.setFocusable(true);
-                        musicvideolist.setFocusableInTouchMode(true);
-                        musicvideolist.requestFocus();
+//                        musicvideolist.setFocusable(true);
+//                        musicvideolist.setFocusableInTouchMode(true);
+//                        musicvideolist.requestFocus();
                         musicvideolist.setSelection(BaseApp.current_music_play_num);
                     }
                     mymusiclistviewAdapter.notifyDataSetChanged();
@@ -924,14 +945,14 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     }
 
                     if(BaseApp.current_video_play_num < 0){
-                        musicvideolist.setFocusable(true);
-                        musicvideolist.setFocusableInTouchMode(true);
-                        musicvideolist.requestFocus();
+//                        musicvideolist.setFocusable(true);
+//                        musicvideolist.setFocusableInTouchMode(true);
+//                        musicvideolist.requestFocus();
                         musicvideolist.setSelection(0);
                     } else{
-                        musicvideolist.setFocusable(true);
-                        musicvideolist.setFocusableInTouchMode(true);
-                        musicvideolist.requestFocus();
+//                        musicvideolist.setFocusable(true);
+//                        musicvideolist.setFocusableInTouchMode(true);
+//                        musicvideolist.requestFocus();
                         musicvideolist.setSelection(BaseApp.current_music_play_num);
                     }
                     myvideolistviewAdapter.notifyDataSetChanged();
@@ -962,23 +983,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                     loading_layout.setVisibility(View.GONE);
                     musicvideolist.setVisibility(View.GONE);
                     gridview_id.setVisibility(View.VISIBLE);
-               //     gridview_id.requestFocusFromTouch();
                     if(myGridViewAdapter2 != null){
+                        myGridViewAdapter2 = new MyGridViewAdapter2(MainActivity.this,picInfos);
+                        gridview_id.setAdapter(myGridViewAdapter2);
                     }else{
                         System.out.println("picInfos is OK,come to update the gridview...");
                         myGridViewAdapter2 = new MyGridViewAdapter2(MainActivity.this,picInfos);
                         gridview_id.setAdapter(myGridViewAdapter2);
                     }
                     if(BaseApp.current_pic_play_num < 0){
-                        gridview_id.setFocusable(true);
-                        gridview_id.setFocusableInTouchMode(true);
-                        gridview_id.requestFocus();
+//                        gridview_id.setFocusable(true);
+//                        gridview_id.setFocusableInTouchMode(true);
+//                        gridview_id.requestFocus();
                         gridview_id.setSelection(0);
                     } else{
-                        gridview_id.setFocusable(true);
-                        gridview_id.setFocusableInTouchMode(true);
-                        gridview_id.requestFocus();
-                        gridview_id.setSelection(BaseApp.current_music_play_num);
+//                        gridview_id.setFocusable(true);
+//                        gridview_id.setFocusableInTouchMode(true);
+//                        gridview_id.requestFocus();
+                        gridview_id.setSelection(BaseApp.current_pic_play_num);
                     }
                     myGridViewAdapter2.notifyDataSetChanged();
                 }
@@ -1003,9 +1025,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
         if(BaseApp.current_media == 0){
 
             button_play_mode.setImageResource(music_play_mode_resource[BaseApp.music_play_mode]);
-            //又出现了fragment还没有渲染出来就操作的空指针了。
-          //  musicFragment.changeMusicPlayModeUI(BaseApp.music_play_mode);
-          //  playMusicService.setPlay_mode(BaseApp.music_play_mode);
             BaseApp.current_music_play_num = position;
             mymusiclistviewAdapter.notifyDataSetChanged();
             if(BaseApp.current_fragment != 0) {
@@ -1183,19 +1202,6 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 }
         }
 
-
-//            Rect frame = new Rect();
-//            getWindow().getDecorView().getWindowVisibleDisplayFrame(frame);
-//            int statusBarHeight = frame.top;
-//            if(BaseApp.ifdebug) {
-//                System.out.println(TAG+"-onVideoScreenChange-"+"状态栏的高度1:----" + statusBarHeight);
-//            }
-//            int contentTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-//            int titleBarHeight = contentTop - statusBarHeight;
-//            if(BaseApp.ifdebug) {
-//                System.out.println(TAG+"-onVideoScreenChange-"+"标题栏的高度1:----" + titleBarHeight);
-//            }
-
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
             mRLayout.setSystemUiVisibility(View.INVISIBLE);
             getWindow().setFlags(
@@ -1222,11 +1228,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             if(BaseApp.ifdebug) {
                 System.out.println(TAG+"-onVideoScreenChange-"+"状态栏的高度2:----" + statusBarHeight);
             }
-//            int contentTop = getWindow().findViewById(Window.ID_ANDROID_CONTENT).getTop();
-//            int titleBarHeight = contentTop - statusBarHeight;
-//            if(BaseApp.ifdebug) {
-//                System.out.println(TAG+"-onVideoScreenChange-"+"标题栏的高度2:----" + titleBarHeight);
-//            }
+
             //系统默认去掉了标题栏，只是保留了状态栏，状态栏的高度是63dp，但是返回后获取的高度为0
             if(statusBarHeight == 0) {
                 RelativeLayout.LayoutParams mFramlayout = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.MATCH_PARENT);
@@ -1251,87 +1253,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             BaseApp.ifopenliebiao = 0;
             leibieliebiao.setVisibility(View.GONE);
         }
-        if(BaseApp.current_fragment == 0){
+        if(BaseApp.current_fragment == 0 && playMusicService.isPlaying()){
             button_bofang.setImageResource(R.mipmap.bofang);
-        }
-    }
-
-    public class MyGridViewAdapter extends BaseAdapter{
-        private List<PicInfo> list;
-        private Point mPoint = new Point(0,0);
-        private GridView mGridView;
-        private LayoutInflater mInflater;
-
-        public MyGridViewAdapter(Context ctx,List<PicInfo> list,GridView gridView){
-            this.list = list;
-            this.mGridView = gridView;
-            mInflater = LayoutInflater.from(ctx);
-        }
-
-        @Override
-        public int getCount() {
-            return list.size();
-        }
-
-        @Override
-        public Object getItem(int position) {
-            return list.get(position);
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            final ViewHolder viewHolder;
-            if(convertView ==null){
-                viewHolder =  new ViewHolder();
-                convertView = mInflater.inflate(R.layout.piclistviewitem_layout,null);
-                viewHolder.mImageView = (MyImageView) convertView.findViewById(R.id.pic_imageView_id);
-                viewHolder.mImageView.setOnMeasureListener(new MyImageView.OnMeasureListener() {
-                    @Override
-                    public void onMeasureSize(int width, int height) {
-                        mPoint.set(width,height);
-                    }
-                });
-                convertView.setTag(viewHolder);
-            }else{
-                viewHolder = (ViewHolder)convertView.getTag();
-                viewHolder.mImageView.setImageResource(R.mipmap.loading);
-            }
-            viewHolder.mImageView.setTag(list.get(position).getData());
-           // System.out.println("Point---"+mPoint.x+":"+mPoint.y);//150:95
-            //通过在MyimageView中调用onMeasure方法来设置point(传入imageview的宽高)，然后在通过下面来调整图片。
-            Bitmap bitmap = NativeImageLoader.getInstance().loadNativeImage(list.get(position).getData(), mPoint, new NativeImageLoader.NativeImageCallBack() {
-                @Override
-                public void onImageLoader(Bitmap bitmap, String path) {
-                    ImageView mImageView = (ImageView) mGridView.findViewWithTag(path);
-                    if(bitmap != null && mImageView != null){
-                        mImageView.setImageBitmap(bitmap);
-                        notifyDataSetChanged();
-                    }
-                }
-            });
-
-            if(bitmap != null){
-                viewHolder.mImageView.setImageBitmap(bitmap);
-            }else{
-                viewHolder.mImageView.setImageResource(R.mipmap.loading);
-            }
-
-            if(BaseApp.current_pic_play_num == position)
-            {
-                viewHolder.mImageView.setBackgroundResource(R.mipmap.tupian_p);
-            }else {
-                viewHolder.mImageView.setBackgroundResource(0);
-            }
-            return convertView;
-        }
-
-        public class ViewHolder{
-            public MyImageView mImageView;
         }
     }
 
@@ -1394,7 +1317,10 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
             picInfos = PicMediaUtils.getPicInfos(MainActivity.this);
             BaseApp.ifPicloaded = true;
             myHandler.sendEmptyMessage(Contents.IMAGE_LOAD_FINISH);//32
-            //publishProgress(0,size);
+
+            if(BaseApp.ifdebug && picInfos!=null && picInfos.size()>0){
+                System.out.println("图片路径:"+picInfos.get(0).getData());
+            }
             return null;
         }
 

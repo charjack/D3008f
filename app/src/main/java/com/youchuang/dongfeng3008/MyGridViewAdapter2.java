@@ -1,6 +1,7 @@
 package com.youchuang.dongfeng3008;
 
 import android.content.Context;
+import android.media.Image;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -29,10 +30,11 @@ public class MyGridViewAdapter2 extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        MyImageView view = (MyImageView)convertView;
+//      MyImageView view = (MyImageView)convertView;
+        ImageView view = (ImageView) convertView;
         if(view == null){
             view = new MyImageView(context);
-            view.setLayoutParams(new GridView.LayoutParams(130, 72));//重点行
+            view.setLayoutParams(new GridView.LayoutParams(131, 74));//重点行
             view.setScaleType(ImageView.ScaleType.FIT_XY);
             view.setPadding(2,2,2,2);
         }
@@ -45,11 +47,10 @@ public class MyGridViewAdapter2 extends BaseAdapter {
             view.setBackgroundResource(0);
         }
 
-
         Picasso.with(context) //
                 .load(new File(url)) //
-                .placeholder(R.mipmap.loading) //
-                .error(R.mipmap.loading) //
+               // .placeholder(R.mipmap.loading2) //
+               // .error(R.mipmap.loading2) //
                 .fit() //
                 .tag(context) //
                 .into(view);

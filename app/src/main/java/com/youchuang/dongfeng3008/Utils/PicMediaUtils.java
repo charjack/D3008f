@@ -23,7 +23,8 @@ public class PicMediaUtils {
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null,
                 MediaStore.Images.Media.MIME_TYPE + "=? or "
-                        + MediaStore.Images.Media.MIME_TYPE + "=?",
+                        + MediaStore.Images.Media.MIME_TYPE + "=? "
+                        +MediaStore.Images.Media.DATA + "=?",
                 new String[]{"image/jpeg", "image/png"},
         MediaStore.Images.Media.DEFAULT_SORT_ORDER
         );
@@ -64,19 +65,23 @@ public class PicMediaUtils {
                 MediaStore.Images.Media.DEFAULT_SORT_ORDER
         );
 
+        String temp_name = null;
+        String temp_path = null;
         ArrayList<PicInfo> picInfos = new ArrayList<PicInfo>();
         while (cursor.moveToNext()) {
+            temp_name = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+            temp_path = temp_name.substring(0, temp_name.lastIndexOf("/"));
 
-            PicInfo picInfo = new PicInfo();
-            long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID));
-            String display_name = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
-            String data = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
-
-            picInfo.setId(id);
-            picInfo.setDisplay_name(display_name);
-            picInfo.setData(data);
-
-            picInfos.add(picInfo);
+            if(temp_path.equals("/mnt/usb_storage/fengjing")) {
+                PicInfo picInfo = new PicInfo();
+                long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Images.Media._ID));
+                String display_name = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME));
+                String data = temp_name;
+                picInfo.setId(id);
+                picInfo.setDisplay_name(display_name);
+                picInfo.setData(data);
+                picInfos.add(picInfo);
+            }
         }
         cursor.close();
         return picInfos;
@@ -94,7 +99,17 @@ public class PicMediaUtils {
                     new String[]{"image/jpeg", "image/png"},
                     MediaStore.Images.Media.DEFAULT_SORT_ORDER
             );
-            return cursor.getCount();
+            String temp_name = null;
+            String temp_path = null;
+            int count_pic_nums = 0;
+            while (cursor.moveToNext()) {
+                temp_name = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
+                temp_path = temp_name.substring(0, temp_name.lastIndexOf("/"));
+                if(temp_path.equals("/mnt/usb_storage/fengjing")) {
+                    count_pic_nums++;
+                }
+            }
+            return count_pic_nums;
         }
 
     public static PicInfo getPicInfo(Context context,int _id){

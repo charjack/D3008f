@@ -16,7 +16,7 @@ import java.util.List;
 public class BaseApp extends Application{
     public static boolean ifFullScreenState = false;
     public static int ifopenliebiao = 0;
-    public static boolean ifdebug = true;
+    public static boolean ifdebug = false;
     public static int current_media = 0; //0:music 1: video 2:picture
     public static int music_play_mode = 0;
     public static int video_play_mode = 1;
