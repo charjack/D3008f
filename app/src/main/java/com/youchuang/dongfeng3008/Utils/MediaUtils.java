@@ -40,7 +40,44 @@ public class MediaUtils {
 
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,
-                MediaStore.Audio.Media._ID+"=?",new String[]{String.valueOf(_id)},
+                MediaStore.Audio.Media._ID+" = ?",new String[]{String.valueOf(_id)},
+                MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+
+        Mp3Info mp3Info = null;
+        if(cursor.moveToNext()){
+            mp3Info = new Mp3Info();
+            long id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media._ID));
+            String title = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.TITLE));
+            String artist = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ARTIST));
+            String album = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
+            long albumId = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
+            long duration =cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.DURATION));
+            long size =cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.SIZE));
+            String url = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.DATA));
+            int isMusic = cursor.getInt(cursor.getColumnIndex(MediaStore.Audio.Media.IS_MUSIC));
+
+            if(isMusic != 0 ){
+                mp3Info.setId(id);
+                mp3Info.setTittle(title);
+                mp3Info.setArtist(artist);
+                mp3Info.setAlbum(album);
+                mp3Info.setAlbumId(albumId);
+                mp3Info.setDuration(duration);
+                mp3Info.setSize(size);
+                mp3Info.setUrl(url);
+            }
+        }
+
+        cursor.close();
+        return mp3Info;
+    }
+
+    public static Mp3Info getMp3Infobypath(Context context,String path){
+        System.out.println(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,null,
+                MediaStore.Audio.Media.DATA+" = ?",new String[]{path},
                 MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
 
         Mp3Info mp3Info = null;
@@ -148,7 +185,7 @@ public class MediaUtils {
 
     public static String formatTime(long time){
         String hour = time/(1000*60*60)+"";
-        String min = time/(1000*60)+"";//
+        String min = (time%(1000*60*60))/(1000*60)+"";//
         String sec = time%(1000*60)+"";
 
         if(hour.length()<1){
@@ -161,9 +198,9 @@ public class MediaUtils {
 
 
         if(min.length()<2){
-            min = "0"+time/(1000*60);
+            min = "0"+(time%(1000*60*60))/(1000*60);
         }else{
-            min = time/(1000*60)+"";
+            min = (time%(1000*60*60))/(1000*60)+"";
         }
 
         if(sec.length() == 4) {

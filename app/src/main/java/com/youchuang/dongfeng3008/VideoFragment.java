@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -62,7 +63,6 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
     SeekBar seekBar2;
     LinearLayout progress_really_layout;
     TextView video_current_time,video_total_time;
-
     boolean ispause = false;
     Timer timer;
     MyVideoHandler myVideoHandler;
@@ -193,15 +193,40 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
             public void onCompletion(MediaPlayer mediaPlayer) {
                 //当前视频播放完之后，记录播放时间为0
                 MainActivity.mp4Infos.get(BaseApp.current_video_play_num).setVideo_item_progressed(0);
+                //0 随机播放 1顺序播放 2循环播放 3单曲播放
 
-                if (BaseApp.current_video_play_num + 1 >= MainActivity.mp4Infos.size()) {
+                if((BaseApp.current_video_play_num + 1 >= MainActivity.mp4Infos.size()) && BaseApp.video_play_mode == 1) {
                     mediaPlayer.stop();
                 } else {
                     mediaPlayer.reset();
                     try {
                         BaseApp.current_video_play_num++;
+                        if(BaseApp.video_play_mode == 3)
+                            BaseApp.current_video_play_num--;  //单曲播放 保持数目不变
+                        else if(BaseApp.video_play_mode == 2){
+                            if(BaseApp.current_video_play_num  >= MainActivity.mp4Infos.size()){
+                                BaseApp.current_video_play_num = 0;
+                            }else{  //曲目加1即可
+                            }
+                        }else if(BaseApp.video_play_mode == 1){//曲目加1即可，特殊情况，之前已经处理了
+                        } else if(BaseApp.video_play_mode == 0 ){
+                            BaseApp.current_video_play_num --;  //先恢复
+                            Random random = new Random();
+                            int current_video_play_num_temp = random.nextInt(MainActivity.mp4Infos.size());  //0~3
+                            if(BaseApp.current_video_play_num == current_video_play_num_temp){
+                                BaseApp.current_video_play_num++;
+                                if(BaseApp.current_video_play_num  >= MainActivity.mp4Infos.size()){
+                                    BaseApp.current_video_play_num = 0;
+                                }
+                            }else{
+                                BaseApp.current_video_play_num = current_video_play_num_temp;
+                            }
+
+                        }
+
                         mediaPlayer.setDataSource(MainActivity.mp4Infos.get(BaseApp.current_video_play_num).getData());//设置播放视频源
                         mediaPlayer.prepare();
+                        System.out.println("start play ...");
                         mediaPlayer.start();
 
                         currentVideoTotalTimenum = MainActivity.mp4Infos.get(BaseApp.current_video_play_num).getDuration();
@@ -242,6 +267,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         }, 0, 500);
 
         if(selectfromactivity) {
+            System.out.println("surfaceview create...");
             selectfromactivity = false;
             play_video(currentVideoPath);
         }
@@ -267,19 +293,20 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                 mp=null;
             }
         }
+        BaseApp.isVideostop = ispause;
         ishide = true;  //不加上会出现第一次无法全屏
         timer.cancel();
         videoUIUpdateListener.onVideoStateChange();
     }
 
-    public void playVideoFromMainactivity(int position,int progress){
+    public void playVideoFromMainactivity(int position,int progress){  //不在videoFragment这个界面
         selectfromactivity = true;
         BaseApp.current_video_play_num = position;
         currentVideoProgress = progress;
         currentVideoProgress = (int)MainActivity.mp4Infos.get(position).getVideo_item_progressed();
     }
 
-    public void playVideoFromUser(int position){
+    public void playVideoFromUser(int position){  //已经在videoFragment这个界面了
         selectfromuser = true;
         BaseApp.current_video_play_num = position;
         Mp4Info mp4Info = MainActivity.mp4Infos.get(BaseApp.current_video_play_num);
@@ -364,6 +391,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                 mp.setDataSource(Path);//设置播放视频源
                 mp.prepare();
                 mp.seekTo(currentVideoProgress);
+                ispause = false;
                 mp.start();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -376,6 +404,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                 mp.setDataSource(Path);
                 mp.prepare();
                 mp.seekTo(currentVideoProgress);
+                ispause = false;
                 mp.start();
             } catch (IOException e) {
                 e.printStackTrace();

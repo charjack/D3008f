@@ -1,7 +1,9 @@
 package com.youchuang.dongfeng3008;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -20,8 +22,7 @@ import java.util.concurrent.Executors;
 public class PlayMusicService extends Service implements MediaPlayer.OnCompletionListener,MediaPlayer.OnErrorListener{
     private static final String TAG = "PlayMusicService";
     private MediaPlayer mPlayer;
-    private int currentPosition;
-    ArrayList<Mp3Info> mp3Infos;
+    public  ArrayList<Mp3Info> mp3Infos;
     private boolean isPause = false;
 
     public static final int RANDOM_PLAY = 0;  //随机
@@ -30,12 +31,6 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     public static final int SINGLE_PLAY = 3;  //单曲循环
     public int play_mode = BaseApp.music_play_mode;
 
-    public ArrayList<Mp3Info> getMp3Infos() {
-        return mp3Infos;
-    }
-    public void setMp3Infos(ArrayList<Mp3Info> mp3Infos) {
-        this.mp3Infos = mp3Infos;
-    }
     public void setPlay_mode(int play_mode) {
         this.play_mode = play_mode;
     }
@@ -45,7 +40,7 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     public PlayMusicService() {
     }
     public int getCurrentPosition(){
-        return currentPosition;
+        return BaseApp.current_music_play_num;
     }
 
     private Random random = new Random();
@@ -55,13 +50,14 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
         if(play_mode != BaseApp.music_play_mode){
             play_mode = BaseApp.music_play_mode;
         }
+
             switch(play_mode){
                 case RANDOM_PLAY:
-                    if(random.nextInt(mp3Infos.size()) == currentPosition) {
-                        play(random.nextInt(mp3Infos.size()));
+                    if(random.nextInt(BaseApp.mp3Infos.size()) == BaseApp.current_music_play_num) {
+                        play(random.nextInt(BaseApp.mp3Infos.size()));
                     }
                     else{
-                        play(random.nextInt(mp3Infos.size()));
+                        play(random.nextInt(BaseApp.mp3Infos.size()));
                     }
                     break;
                 case ORDER_PLAY:
@@ -71,7 +67,7 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
                     next();
                     break;
                 case SINGLE_PLAY:
-                    play(currentPosition);
+                    play(BaseApp.current_music_play_num);
                     break;
                 default:break;
             }
@@ -126,23 +122,22 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
             }
         }, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
 
-        if(position<0 || position>=mp3Infos.size()){
-            position = 0;
-        }
-        mp3Info = mp3Infos.get(position);
+        mp3Info = BaseApp.mp3Infos.get(position);
         try {
             mPlayer.reset();
             mPlayer.setDataSource(this, Uri.parse(mp3Info.getUrl()));
             mPlayer.prepare();
             mPlayer.start();
-            currentPosition = position;
+            BaseApp.current_music_play_num = position;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         if(musicUpdateListener!=null){
-            musicUpdateListener.onChange(currentPosition);
+            System.out.println("currentposition-----"+BaseApp.current_music_play_num);
+            musicUpdateListener.onChange(BaseApp.current_music_play_num);
         }
+
         isPause = false;
 
     }
@@ -164,34 +159,37 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     public boolean isPause(){return isPause;}
 
     public void next(){
-        if(currentPosition+1 >= mp3Infos.size()){
-            currentPosition = 0;
+
+        if(BaseApp.current_music_play_num+1 >= BaseApp.mp3Infos.size()){
+            BaseApp.current_music_play_num = 0;
         }else
         {
-            currentPosition++;
+            BaseApp.current_music_play_num++;
         }
-        play(currentPosition);
+        play(BaseApp.current_music_play_num);
     }
 
     public void nextOrder(){
-        if(currentPosition+1 >= mp3Infos.size()){
+        if(BaseApp.current_music_play_num+1 >= BaseApp.mp3Infos.size()){
             mPlayer.stop();
             musicUpdateListener.onStop(1);  //顺序播放，到最后一首停止
         }else
         {
-            currentPosition++;
-            play(currentPosition);
+            BaseApp.current_music_play_num++;
+
+            play(BaseApp.current_music_play_num);
         }
     }
 
     public void prev(){
-        if(currentPosition-1 < 0){
-            currentPosition = mp3Infos.size()-1;
+
+        if(BaseApp.current_music_play_num-1 < 0){
+            BaseApp.current_music_play_num = BaseApp.mp3Infos.size()-1;
         }else
         {
-            currentPosition--;
+            BaseApp.current_music_play_num--;
         }
-        play(currentPosition);
+        play(BaseApp.current_music_play_num);
     }
 
 
@@ -238,11 +236,10 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
     public void onCreate() {
         super.onCreate();
 
-        //下面这两个参数以后需要从sp中获取
-        currentPosition = 0;
-        play_mode = BaseApp.music_play_mode;
+        //下面这个参数以后需要从sp中获取
+        SharedPreferences sharedPreferences = getSharedPreferences("DongfengDataSave", Activity.MODE_PRIVATE);
+        play_mode = sharedPreferences.getInt("MUSICPLAYMODE", 0);
 
-        mp3Infos = MediaUtils.getMp3Infos(this);
         mPlayer = new MediaPlayer();
         mPlayer.setOnCompletionListener(this);
         mPlayer.setOnErrorListener(this);

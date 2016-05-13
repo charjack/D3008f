@@ -68,7 +68,7 @@ public class PictureFragment extends Fragment{
     private PointF mid = new PointF();
     DisplayMetrics dm;
     float minScaleR=0.5f;
-    float MAX_SCALE = 5f;
+    float MAX_SCALE = 2f;
     float bigSize = 1.25f;
     float smallSize = 0.8f;
 
@@ -104,9 +104,7 @@ public class PictureFragment extends Fragment{
         float deltaX = 0,deltaY = 0;
         Matrix newmatrix = new Matrix();
         deltaY = (175-bm.getHeight()/2);
-        System.out.println("view Height:350"+ "-----bitmap Height:"+bm.getHeight());
         deltaX = 400 - bm.getWidth()/2;
-        System.out.println("view width:400" + "-----bitmap width:" + bm.getWidth());
         newmatrix.postTranslate(deltaX, deltaY);
         big_pic_show.setImageMatrix(newmatrix);
 
@@ -162,13 +160,24 @@ public class PictureFragment extends Fragment{
                                     if (newDist > 20f) {
                                         matrix.set(savedMatrix);
                                         float scale = newDist / oldDist;
-                                        matrix.postScale(scale, scale, mid.x, mid.y);
+
+                                        float p[] = new float[9];
+                                        matrix.getValues(p);    //p会每次都变化
+                                        if(BaseApp.ifdebug) {
+                                            System.out.println("P[0]------:" + p[0] + "scale---:" + scale);
+                                        }
+                                        if((p[0] < minScaleR) && scale < 1){  //限制最小和最大视图
+                                            matrix.postScale(1, 1, mid.x, mid.y);
+                                        }else if((p[0] > MAX_SCALE) && scale > 1){
+                                            matrix.postScale(1, 1, mid.x, mid.y);
+                                        }else {
+                                            matrix.postScale(scale, scale, mid.x, mid.y);
+                                        }
                                     }
                                 }
                                 break;
                         }
                         view.setImageMatrix(matrix);
-                        CheckScale();
                     }
                 }
                 if(ifzoom){
@@ -215,9 +224,13 @@ public class PictureFragment extends Fragment{
 
         Matrix newmatrix = new Matrix();
        float deltaY = 175-bm.getHeight()/2;  //view的高度就是350
-        System.out.println("view Height:350"+ "-----bitmap Height:"+bm.getHeight());
+        if(BaseApp.ifdebug) {
+            System.out.println("view Height:350" + "-----bitmap Height:" + bm.getHeight());
+        }
        float deltaX = 400 - bm.getWidth()/2;  // view的宽度就是800
-        System.out.println("view width:400" + "-----bitmap width:"+bm.getWidth());
+        if(BaseApp.ifdebug) {
+            System.out.println("view width:400" + "-----bitmap width:" + bm.getWidth());
+        }
         newmatrix.postTranslate(deltaX,deltaY);
         big_pic_show.setImageMatrix(newmatrix);
     }
@@ -242,9 +255,13 @@ public class PictureFragment extends Fragment{
         big_pic_show.setImageBitmap(bm);
         Matrix newmatrix = new Matrix();
         float deltaY = 175-bm.getHeight()/2;  //view的高度就是350
-        System.out.println("view Height:350"+ "-----bitmap Height:"+bm.getHeight());
+        if(BaseApp.ifdebug) {
+            System.out.println("view Height:350" + "-----bitmap Height:" + bm.getHeight());
+        }
         float deltaX = 400 - bm.getWidth()/2;  // view的宽度就是800
-        System.out.println("view width:400" + "-----bitmap width:" + bm.getWidth());
+        if(BaseApp.ifdebug) {
+            System.out.println("view width:400" + "-----bitmap width:" + bm.getWidth());
+        }
         newmatrix.postTranslate(deltaX, deltaY);
         big_pic_show.setImageMatrix(newmatrix);
     }
@@ -268,9 +285,13 @@ public class PictureFragment extends Fragment{
         big_pic_show.setImageBitmap(bm);
         Matrix newmatrix = new Matrix();
         float deltaY = 175-bm.getHeight()/2;  //view的高度就是350
-        System.out.println("view Height:350"+ "-----bitmap Height:"+bm.getHeight());
+        if(BaseApp.ifdebug) {
+            System.out.println("view Height:350" + "-----bitmap Height:" + bm.getHeight());
+        }
         float deltaX = 400 - bm.getWidth()/2;  // view的宽度就是800
-        System.out.println("view width:400" + "-----bitmap width:"+bm.getWidth());
+        if(BaseApp.ifdebug) {
+            System.out.println("view width:400" + "-----bitmap width:" + bm.getWidth());
+        }
         newmatrix.postTranslate(deltaX,deltaY);
         big_pic_show.setImageMatrix(newmatrix);
     }
@@ -300,10 +321,20 @@ public class PictureFragment extends Fragment{
         ifzoom = true;
     //    size = bigSize * size;
         myBitmap = ((BitmapDrawable) big_pic_show.getDrawable()).getBitmap();
+
+  //      System.out.println("myBitmap.getWidth:"+myBitmap.getWidth() +"-----myBitmap.getHeight:"+myBitmap.getHeight());
         big_pic_show.setImageBitmap(myBitmap);
         Matrix newMatrix = big_pic_show.getImageMatrix();
-
-        newMatrix.postScale(bigSize, bigSize,400,175);
+        float p[] = new float[9];
+        newMatrix.getValues(p);
+        if(BaseApp.ifdebug) {
+            System.out.println("P[0]------:" + p[0]);
+        }
+        if(p[0] >MAX_SCALE){
+            newMatrix.postScale(1, 1, 400, 175);
+        }else {
+            newMatrix.postScale(bigSize, bigSize, 400, 175);
+        }
         big_pic_show.setImageMatrix(newMatrix);
 
 
@@ -315,26 +346,22 @@ public class PictureFragment extends Fragment{
         ifzoom = true;
     //    size = smallSize * size;
         myBitmap = ((BitmapDrawable) big_pic_show.getDrawable()).getBitmap();
+
+ //       System.out.println("myBitmap.getWidth:" + myBitmap.getWidth() + "-----myBitmap.getHeight:" + myBitmap.getHeight());
+
         big_pic_show.setImageBitmap(myBitmap);
         Matrix newMatrix = big_pic_show.getImageMatrix();
-        newMatrix.postScale(smallSize, smallSize, 400, 175);
-        big_pic_show.setImageMatrix(newMatrix);
-    }
-    protected void CheckScale()
-    {
         float p[] = new float[9];
-        matrix.getValues(p);
-        if (mode == ZOOM)
-        {
-            if (p[0] < minScaleR)
-            {
-                matrix.setScale(minScaleR, minScaleR);
-            }
-            if (p[0] > MAX_SCALE)
-            {
-                matrix.set(savedMatrix);
-            }
+        newMatrix.getValues(p);    //p会每次都变化
+        if(BaseApp.ifdebug) {
+            System.out.println("P[0]------:" + p[0]);
         }
+        if(p[0] < minScaleR){
+            newMatrix.postScale(1, 1, 400, 175);
+        }else {
+            newMatrix.postScale(smallSize, smallSize, 400, 175);
+        }
+        big_pic_show.setImageMatrix(newMatrix);
     }
 
     class MyPicHandler extends Handler {
@@ -348,9 +375,13 @@ public class PictureFragment extends Fragment{
                     big_pic_show.setImageBitmap(bm);
                     Matrix newmatrix = new Matrix();
                     float deltaY = 175-bm.getHeight()/2;  //view的高度就是350
-                    System.out.println("view Height:350"+ "-----bitmap Height:"+bm.getHeight());
+                    if(BaseApp.ifdebug) { //每次显示的都是原始图片的高宽
+                        System.out.println("view Height:350" + "-----bitmap Height:" + bm.getHeight());
+                    }
                     float deltaX = 400 - bm.getWidth()/2;  // view的宽度就是800
-                    System.out.println("view width:400" + "-----bitmap width:"+bm.getWidth());
+                    if(BaseApp.ifdebug) {
+                        System.out.println("view width:400" + "-----bitmap width:" + bm.getWidth());
+                    }
                     newmatrix.postTranslate(deltaX,deltaY);
                     big_pic_show.setImageMatrix(newmatrix);
                     break;
@@ -361,7 +392,6 @@ public class PictureFragment extends Fragment{
             }
         }
     }
-
 
     public interface PicUIUpdateListener{
         public void onPicLieBiaoClose();

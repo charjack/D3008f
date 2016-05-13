@@ -45,7 +45,7 @@ public class Mp4MediaUtils {
 
     public static String formatTime(long time){
         String hour = time/(1000*60*60)+"";
-        String min = time/(1000*60)+"";//
+        String min = (time%(1000*60*60))/(1000*60)+"";//
         String sec = time%(1000*60)+"";
 
         if(hour.length()<1){
@@ -58,9 +58,9 @@ public class Mp4MediaUtils {
 
 
         if(min.length()<2){
-            min = "0"+time/(1000*60);
+            min = "0"+(time%(1000*60*60))/(1000*60);
         }else{
-            min = time/(1000*60)+"";
+            min = (time%(1000*60*60))/(1000*60)+"";
         }
 
         if(sec.length() == 4) {

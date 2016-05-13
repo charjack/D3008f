@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.lidroid.xutils.DbUtils;
+import com.youchuang.dongfeng3008.vo.Mp3Info;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,15 +28,21 @@ public class BaseApp extends Application{
     public static int current_fragment = 0;
     public static int isfirststartmusic = 1;
     public static int current_pic_play_num = -1;
-    public static boolean ifPicloaded = false;
-    public static boolean ifMusicLoaded = false;
-    public static boolean ifVideoLoaded = false;
     public static boolean iffirststart = true;
     public static Context context;
     public static boolean exitUI = false;
     public static DbUtils dbUtils;
     public static int statebarheight = 0;
     public static int dibuheight = 0;
+    public static boolean isVideostop = false;   //暂停状态下返回来之后依然，暂停
+    static ArrayList<Mp3Info>  mp3Infos = new ArrayList<>();
+    public static boolean media_already_ok = false;
+    public static int music_media_state_scan = 0; //
+    public static int video_media_state_scan = 0; //
+    public static int pic_media_state_scan = 0; //
+    public static int first_select_music = 0;    //避免每次都去刷新ui，而只是去刷新曲目就可以了
+    public static boolean when_scan_click = false;  //判断scan的时候，是否点击了item
+
     @Override
     public void onCreate() {
         super.onCreate();
