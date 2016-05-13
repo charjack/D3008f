@@ -336,8 +336,6 @@ public class PictureFragment extends Fragment{
             newMatrix.postScale(bigSize, bigSize, 400, 175);
         }
         big_pic_show.setImageMatrix(newMatrix);
-
-
     }
     public void pic_play_suoxiao(){
         if(BaseApp.ifdebug) {

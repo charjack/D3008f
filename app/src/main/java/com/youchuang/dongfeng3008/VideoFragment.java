@@ -155,13 +155,18 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                     mp.pause();
-                    //改变暂停按钮
+                if(videoUIUpdateListener != null) {
+                    videoUIUpdateListener.onVideoNotifyUIChange(1);  //1表示暂停 0 表示开始按钮
+                }  //改变暂停按钮
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                mp.start();
-                //改变暂停按钮
+                mp.start();//改变暂停按钮
+                if(videoUIUpdateListener != null){
+                    videoUIUpdateListener.onVideoNotifyUIChange(0);  //1表示暂停 0 表示开始按钮
+                }
+
             }
         });
         video_current_time=(TextView) video_view.findViewById(R.id.video_current_time);
@@ -196,7 +201,8 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                 //0 随机播放 1顺序播放 2循环播放 3单曲播放
 
                 if((BaseApp.current_video_play_num + 1 >= MainActivity.mp4Infos.size()) && BaseApp.video_play_mode == 1) {
-                    mediaPlayer.stop();
+                    mediaPlayer.pause();   //结束后不能停止，可能用户还会拖动播放
+                    videoUIUpdateListener.onVideoNotifyUIChange(1);  //1表示暂停 0 表示开始按钮
                 } else {
                     mediaPlayer.reset();
                     try {
@@ -209,10 +215,10 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                             }else{  //曲目加1即可
                             }
                         }else if(BaseApp.video_play_mode == 1){//曲目加1即可，特殊情况，之前已经处理了
-                        } else if(BaseApp.video_play_mode == 0 ){
+                        } else if(BaseApp.video_play_mode == 0 ){  //随机播放
                             BaseApp.current_video_play_num --;  //先恢复
                             Random random = new Random();
-                            int current_video_play_num_temp = random.nextInt(MainActivity.mp4Infos.size());  //0~3
+                            int current_video_play_num_temp = random.nextInt(MainActivity.mp4Infos.size());  //总数是4  范围0~3
                             if(BaseApp.current_video_play_num == current_video_play_num_temp){
                                 BaseApp.current_video_play_num++;
                                 if(BaseApp.current_video_play_num  >= MainActivity.mp4Infos.size()){
@@ -240,6 +246,7 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
                         e.printStackTrace();
                     }
                 }
+                videoUIUpdateListener.onVideoNotifyUIliebiaoChange();
             }
         });
 
@@ -366,6 +373,8 @@ public class VideoFragment extends Fragment implements SurfaceHolder.Callback{
         public void onVideoStateChange();
         public void onVideoScreenChange(int progress);
         public void onVideoLieBiaoClose();
+        public void onVideoNotifyUIChange(int ifstop);
+        public void onVideoNotifyUIliebiaoChange();
     }
 
 

@@ -12,25 +12,19 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.media.AudioManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.GridView;
@@ -39,27 +33,20 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.lidroid.xutils.db.sqlite.Selector;
 import com.lidroid.xutils.exception.DbException;
+import com.youchuang.dongfeng3008.Adapter.MyGridViewAdapter2;
+import com.youchuang.dongfeng3008.Adapter.MymusiclistviewAdapter;
+import com.youchuang.dongfeng3008.Adapter.MyvideolistviewAdapter;
 import com.youchuang.dongfeng3008.Utils.AlertDialog;
 import com.youchuang.dongfeng3008.Utils.MediaUtils;
 import com.youchuang.dongfeng3008.Utils.Mp4MediaUtils;
-import com.youchuang.dongfeng3008.Utils.MyBitMap;
-import com.youchuang.dongfeng3008.Utils.MyImageView;
-import com.youchuang.dongfeng3008.Utils.MyListView;
-import com.youchuang.dongfeng3008.Utils.NativeImageLoader;
-import com.youchuang.dongfeng3008.Utils.NoScrollGridView;
 import com.youchuang.dongfeng3008.Utils.PicMediaUtils;
 import com.youchuang.dongfeng3008.vo.Contents;
 import com.youchuang.dongfeng3008.vo.Mp3Info;
 import com.youchuang.dongfeng3008.vo.Mp4Info;
 import com.youchuang.dongfeng3008.vo.PicInfo;
-
-import org.apache.http.impl.cookie.BasicSecureHandler;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -718,7 +705,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 BaseApp.ifopenliebiao = 0;
                 leibieliebiao.setVisibility(View.GONE);
                 if(BaseApp.current_fragment == 0 && BaseApp.mp3Infos != null && BaseApp.mp3Infos.size() > 0) {
-                    playMusicService.prev();
+                    if(BaseApp.current_music_play_num >=0) {  //刷新的过程中，点击无效
+                        playMusicService.prev();
+                    }
                 }else if(BaseApp.current_fragment == 1 && mp4Infos != null && mp4Infos.size() > 0){
                     videoFragment.playVideopre();
                     button_bofang.setImageResource(R.mipmap.bofang);
@@ -778,12 +767,18 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
                 BaseApp.ifopenliebiao = 0;
                 leibieliebiao.setVisibility(View.GONE);
                 if(BaseApp.current_fragment == 0 && BaseApp.mp3Infos != null && BaseApp.mp3Infos.size() > 0){
-                    playMusicService.next();
+                    if(BaseApp.current_music_play_num >=0) {
+                        playMusicService.next();
+                    }
                 }else if(BaseApp.current_fragment == 1&& mp4Infos != null && mp4Infos.size() > 0){
-                    videoFragment.playVideonext();
-                    button_bofang.setImageResource(R.mipmap.bofang);
+                    if(BaseApp.current_video_play_num>=0) {
+                        videoFragment.playVideonext();
+                        button_bofang.setImageResource(R.mipmap.bofang);
+                    }
                 }else if(BaseApp.current_fragment == 2 && picInfos != null && picInfos.size() > 0) {
-                    pictureFragment.playPicnext();
+                    if(BaseApp.current_pic_play_num>=0) {
+                        pictureFragment.playPicnext();
+                    }
                 }
                 break;
             case R.id.button_play_mode:
@@ -1409,6 +1404,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener,
     @Override
     public void onVideoLieBiaoClose() {
         leibieliebiao.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onVideoNotifyUIChange(int ifstop) {  //拖动状态下和最后一个视频的时候改变暂停按钮
+        if(ifstop == 1){
+            button_bofang.setImageResource(R.mipmap.zanting);
+        }else{
+            button_bofang.setImageResource(R.mipmap.bofang);
+        }
+
+        if(BaseApp.current_fragment == 1 && BaseApp.video_play_mode == 1 && BaseApp.current_video_play_num + 1 >= mp4Infos.size()){ //视频+顺序播放
+            //还需要考虑全屏和小屏两种情况
+            if(!BaseApp.ifFullScreenState && ifstop == 1){  //不是全屏
+                 button_bofang.setImageResource(R.mipmap.zanting);
+            }
+        }
+    }
+
+    @Override
+    public void onVideoNotifyUIliebiaoChange() {
+        //当列表打开的时候，需要重新刷新
+        if(BaseApp.ifopenliebiao == 1 && myvideolistviewAdapter != null){
+            myvideolistviewAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override

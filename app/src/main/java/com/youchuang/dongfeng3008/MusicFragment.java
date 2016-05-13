@@ -114,7 +114,6 @@ public class MusicFragment extends Fragment {
         }
     }
 
-
     public interface MusicUIUpdateListener{
         public void onUIChange(int position);
         public void onServiceCommand(int i);

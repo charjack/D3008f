@@ -171,8 +171,8 @@ public class PlayMusicService extends Service implements MediaPlayer.OnCompletio
 
     public void nextOrder(){
         if(BaseApp.current_music_play_num+1 >= BaseApp.mp3Infos.size()){
-            mPlayer.stop();
-            musicUpdateListener.onStop(1);  //顺序播放，到最后一首停止
+            mPlayer.pause();
+            musicUpdateListener.onStop(1);  //顺序播放，到最后一首暂停，不能停止，否则重新开始播放会出问题
         }else
         {
             BaseApp.current_music_play_num++;
